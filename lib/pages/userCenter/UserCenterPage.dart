@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:html';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gztyre/commen/Global.dart';
@@ -207,13 +210,9 @@ class _UserCenterPageState extends State<UserCenterPage> {
                             child: Text('退出登录', style: TextStyle(color: Colors.redAccent),),
                             color: Colors.transparent,
                             onPressed: () async {
+//                              print(JsonDecoder().convert(String.fromCharCodes(Base64Decoder().convert(Global.token.split(".")[1])))['sub']);
                               await Global.logout();
-                              Navigator.of(widget.rootContext).pushAndRemoveUntil(
-                                  CupertinoPageRoute(builder: (BuildContext context) {
-                                    return LoginPage();
-                                  }), (route) {
-                                return true;
-                              });
+                              window.open("http://192.168.6.211/#/passport/login", '_self');
                             },
                           ),
                         ),

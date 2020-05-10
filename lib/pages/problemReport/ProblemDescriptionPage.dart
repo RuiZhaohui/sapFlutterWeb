@@ -40,25 +40,25 @@ class _ProblemDescriptionPageState extends State<ProblemDescriptionPage> {
             ...list[i].content.map((item) {
               return
                 Padding(padding: EdgeInsets.only(left: 10),
-              child: GestureDetector(
-                child: ListItemSelectWidget(
-                    title: Text(
-                      item["text"],
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    item: item,
-                    selectedItem: this._selectItem),
-                onTap: () {
-                  if (this._selectItem == item) {
-                    this._selectItem = null;
-                    this._currentProblemDescription = null;
-                  } else
-                    this._selectItem = item;
-                  this._currentProblemDescription = list[i];
-                  setState(() {});
-                },
-              ),
+                  child: GestureDetector(
+                    child: ListItemSelectWidget(
+                        title: Text(
+                          item["text"],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        item: item,
+                        selectedItem: this._selectItem),
+                    onTap: () {
+                      if (this._selectItem == item) {
+                        this._selectItem = null;
+                        this._currentProblemDescription = null;
+                      } else
+                        this._selectItem = item;
+                      this._currentProblemDescription = list[i];
+                      setState(() {});
+                    },
+                  ),
                 );
             }).toList()
           ],
@@ -111,8 +111,8 @@ class _ProblemDescriptionPageState extends State<ProblemDescriptionPage> {
   _listProblemDescription() {
     this._loading = true;
     HttpRequest.listProblemDescription(widget.type,
-        (List<ProblemDescription> list) {
-      this._list = list;
+            (List<ProblemDescription> list) {
+          this._list = list;
 //      this._currentProblemDescription = this._selectItem == null ? null : list.firstWhere((item) {
 //        return item.content.any((item2) {
 //          if (item2 != null) {
@@ -120,15 +120,15 @@ class _ProblemDescriptionPageState extends State<ProblemDescriptionPage> {
 //          } else return false;
 //        });
 //      });
-      setState(() {
-        this._loading = false;
-      });
-    }, (err) {
-      print(err);
-      setState(() {
-        this._loading = false;
-      });
-    });
+          setState(() {
+            this._loading = false;
+          });
+        }, (err) {
+          print(err);
+          setState(() {
+            this._loading = false;
+          });
+        });
   }
 
   @override
@@ -173,11 +173,11 @@ class _ProblemDescriptionPageState extends State<ProblemDescriptionPage> {
                 child: SafeArea(
                     child: CupertinoScrollbar(
                         child: ListView(
-                  children: <Widget>[
+                          children: <Widget>[
 //                  SearchBar(controller: this._shiftController),
-                    ...createWidgetList(this._list),
-                  ],
-                ))),
+                            ...createWidgetList(this._list),
+                          ],
+                        ))),
               ),
             );
           },

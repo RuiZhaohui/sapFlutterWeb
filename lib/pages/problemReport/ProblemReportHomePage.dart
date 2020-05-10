@@ -43,9 +43,12 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
   bool _isStop = false;
   TextEditingController _description = new TextEditingController();
   TextEditingController _remark = new TextEditingController();
+  TextEditingController _bautl = new TextEditingController();
+  TextEditingController _bautlNum = new TextEditingController();
   ListController _list = ListController(list: []);
 
   Device _device;
+
 //  FunctionPosition _position;
   RepairType _repairType;
   Map<String, String> _selectProblemDescription;
@@ -59,15 +62,15 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
   _notification(String QMNUM, String WCPLGR) async {
     await HttpRequest.searchWorkerByWCPLGR(QMNUM, WCPLGR, (res) async {
       List workerList = res.where((item) {
-        return item.PERNR != Global.userInfo.PERNR && [
-          "A01", "A02", "A03"
-        ].contains(item.SORTB) && item.KTEX1 == "闲置";
+        return item.PERNR != Global.userInfo.PERNR &&
+            ["A01", "A02", "A03"].contains(item.SORTB) &&
+            item.KTEX1 == "闲置";
       }).map((item) {
         return item.PERNR;
       }).toList();
-      await HttpRequestRest.pushAlias(workerList, "", "", "${Global.userInfo.ENAME}上报维修", [], (success){}, (err){});
-    }, (err) {
-    });
+      await HttpRequestRest.pushAlias(workerList, "", "",
+          "${Global.userInfo.ENAME}上报维修", [], (success) {}, (err) {});
+    }, (err) {});
   }
 
   _buildTextareaWithPicAndVideoWidget() {
@@ -79,6 +82,1100 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
       placeholder: "补充故障描述...",
       lines: 3,
     );
+  }
+
+  _commitReport() {
+
+    if (this._device == null ||
+        this._repairType == null ||
+        this._problemDescription == null ||
+        (this._repairType.ILART == "N08" && (_bautl.text == null || _bautlNum.text == null))) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "请填写完整",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
+    } else if (this._repairType.ILART == "N08" && !_bautl.text.startsWith("WX")) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "备件编号请以 WX 开头",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
+    } else {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "是否上报故障",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("否"),
+                ),
+                CupertinoDialogAction(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      this._loading = true;
+                    });
+                    Uuid uuid = Uuid();
+                    String left = (new DateTime
+                        .now()
+                        .millisecondsSinceEpoch
+                        .toString() +
+                        uuid
+                            .v4()
+                            .substring(0, 3))
+                        .substring(0, 16);
+                    List<String> pictures = List();
+                    String video = '';
+                    String audio = '';
+                    if (this._list.value.length >
+                        0) {
+                      await HttpRequestRest.upload(
+                          this
+                              ._list
+                              .value
+                              .map((item) {
+                            return item;
+                          }).toList(), (res) {
+                        res.forEach((item) {
+                          if (Global.videoType
+                              .contains(item[
+                          "fileDownloadUri"]
+                              .split(".")
+                              .last
+                              .toLowerCase())) {
+                            video = item[
+                            "fileDownloadUri"];
+                          } else if (Global
+                              .audioType
+                              .contains(item[
+                          "fileDownloadUri"]
+                              .split(".")
+                              .last
+                              .toLowerCase())) {
+                            audio = item[
+                            "fileDownloadUri"];
+                          } else {
+                            pictures.add(item[
+                            "fileDownloadUri"]);
+                          }
+                        });
+
+                        String sapNo = "";
+                        HttpRequest.createReportOrder(
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.PERNR,
+                            Global.workShift == null
+                                ? ''
+                                : Global.workShift
+                                .TPLNR,
+                            this._repairType == null
+                                ? ''
+                                : this
+                                ._repairType
+                                .ILART,
+                            this._device == null
+                                ? ''
+                                : this
+                                ._device
+                                .deviceCode,
+                            this._device == null
+                                ? ''
+                                : this
+                                ._device
+                                .positionCode,
+                            this._problemDescription ==
+                                null
+                                ? ''
+                                : this
+                                ._problemDescription
+                                .group,
+                            this._selectProblemDescription ==
+                                null
+                                ? ''
+                                : this._selectProblemDescription[
+                            "code"],
+                            this._description ==
+                                null
+                                ? ''
+                                : this
+                                ._description
+                                .text,
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.CPLGR,
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.MATYP,
+                            this._isStop ? "X" : '',
+                            left, (res) {
+                          sapNo = res['QMNUM'];
+                          result = res;
+                          HttpRequestRest.malfunction(
+                              left,
+                              sapNo,
+                              1,
+                              pictures,
+                              video,
+                              audio,
+                              this._problemDescription ==
+                                  null
+                                  ? ''
+                                  : this._selectProblemDescription[
+                              "text"],
+                              this._description == null
+                                  ? ''
+                                  : this
+                                  ._description
+                                  .text,
+                              this._remark == null
+                                  ? ''
+                                  : this
+                                  ._remark
+                                  .text,
+                              this._isStop,
+                              Global.userInfo == null
+                                  ? ''
+                                  : Global.userInfo
+                                  .PERNR,
+                              '',
+                              '',
+                              '新工单',
+                              "",
+                              this._device == null
+                                  ? ''
+                                  : this
+                                  ._device
+                                  .deviceName,
+                              new DateTime.now()
+                                  .toString(),
+                              '', (res) {
+                            setState(() {
+                              this._loading = false;
+                            });
+                            _notification(
+                                res["QMNUM"],
+                                res["WCPLGR"]);
+                            showCupertinoDialog(
+                                context: widget
+                                    .rootContext,
+                                builder:
+                                    (BuildContext
+                                context) {
+                                  return CupertinoAlertDialog(
+                                    content: Text(
+                                      "上报成功",
+                                      style: TextStyle(
+                                          fontSize:
+                                          18),
+                                    ),
+                                    actions: <
+                                        Widget>[
+                                      CupertinoDialogAction(
+                                        onPressed:
+                                            () {
+                                          Navigator.of(
+                                              context)
+                                              .pop();
+                                        },
+                                        child: Text(
+                                            "好"),
+                                      ),
+                                    ],
+                                  );
+                                });
+                            setState(() {
+                              this._device = null;
+                              this._repairType =
+                              null;
+                              this._problemDescription =
+                              null;
+                              this._description =
+                              new TextEditingController();
+                              this._remark =
+                              new TextEditingController();
+                              this._list.value =
+                              new List();
+                            });
+                          }, (err) {
+                            setState(() {
+                              this._loading = false;
+                            });
+                            showCupertinoDialog(
+                                context: widget
+                                    .rootContext,
+                                builder:
+                                    (BuildContext
+                                context) {
+                                  return CupertinoAlertDialog(
+                                    content: Text(
+                                      err.error ?? "上报失败",
+                                      style: TextStyle(
+                                          fontSize:
+                                          18),
+                                    ),
+                                    actions: <
+                                        Widget>[
+                                      CupertinoDialogAction(
+                                        onPressed:
+                                            () {
+                                          Navigator.of(
+                                              context)
+                                              .pop();
+                                        },
+                                        child: Text(
+                                            "好"),
+                                      ),
+                                    ],
+                                  );
+                                });
+                          });
+                        }, (err) {
+                          print(err);
+                          setState(() {
+                            this._loading = false;
+                          });
+                          showCupertinoDialog(
+                              context: widget
+                                  .rootContext,
+                              builder: (BuildContext
+                              context) {
+                                return CupertinoAlertDialog(
+                                  content: Text(
+                                    err.error ?? "上报失败",
+                                    style: TextStyle(
+                                        fontSize:
+                                        18),
+                                  ),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      onPressed:
+                                          () {
+                                        Navigator.of(
+                                            context)
+                                            .pop();
+                                      },
+                                      child:
+                                      Text("好"),
+                                    ),
+                                  ],
+                                );
+                              });
+                        });
+                      }, (err) {
+                        print(err);
+                        setState(() {
+                          this._loading = false;
+                        });
+                        showCupertinoDialog(
+                            context:
+                            widget.rootContext,
+                            builder: (BuildContext
+                            context) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  err.error ?? '上报失败',
+                                  style: TextStyle(
+                                      fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(
+                                          context)
+                                          .pop();
+                                    },
+                                    child:
+                                    Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      });
+                    } else {
+                      String sapNo = "";
+                      await HttpRequest.createReportOrder(
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.PERNR,
+                          Global.workShift == null
+                              ? ''
+                              : Global
+                              .workShift.TPLNR,
+                          this._repairType == null
+                              ? ''
+                              : this
+                              ._repairType
+                              .ILART,
+                          this._device == null
+                              ? ''
+                              : this
+                              ._device
+                              .deviceCode,
+                          this._device == null
+                              ? ''
+                              : this
+                              ._device
+                              .positionCode,
+                          this._problemDescription ==
+                              null
+                              ? ''
+                              : this
+                              ._problemDescription
+                              .group,
+                          this._problemDescription ==
+                              null
+                              ? ''
+                              : this._selectProblemDescription[
+                          "code"],
+                          this._description == null
+                              ? ''
+                              : this
+                              ._description
+                              .text,
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.CPLGR,
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.MATYP,
+                          this._isStop ? "X" : '',
+                          left, (res) {
+                        sapNo = res['QMNUM'];
+                        result = res;
+                        HttpRequestRest.malfunction(
+                            left,
+                            sapNo,
+                            1,
+                            pictures,
+                            video,
+                            null,
+                            this._problemDescription ==
+                                null
+                                ? ''
+                                : this._selectProblemDescription[
+                            "text"],
+                            this._description ==
+                                null
+                                ? ''
+                                : this
+                                ._description
+                                .text,
+                            this
+                                ._remark ==
+                                null
+                                ? ''
+                                : this._remark.text,
+                            this._isStop,
+                            Global
+                                .userInfo ==
+                                null
+                                ? ''
+                                : Global
+                                .userInfo.PERNR,
+                            '',
+                            '',
+                            '新工单',
+                            "",
+                            this
+                                ._device ==
+                                null
+                                ? ''
+                                : this
+                                ._device
+                                .deviceName,
+                            new DateTime.now()
+                                .toString(),
+                            '', (res) {
+                          setState(() {
+                            this._loading = false;
+                          });
+                          _notification(
+                              result["QMNUM"],
+                              result["WCPLGR"]);
+                          showCupertinoDialog(
+                              context: widget
+                                  .rootContext,
+                              builder: (BuildContext
+                              context) {
+                                return CupertinoAlertDialog(
+                                  content: Text(
+                                    "上报成功",
+                                    style: TextStyle(
+                                        fontSize:
+                                        18),
+                                  ),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      onPressed:
+                                          () {
+                                        Navigator.of(
+                                            context)
+                                            .pop();
+                                      },
+                                      child:
+                                      Text("好"),
+                                    ),
+                                  ],
+                                );
+                              });
+                          setState(() {
+                            this._device = null;
+                            this._repairType = null;
+                            this._problemDescription =
+                            null;
+                            this._description.text =
+                            "";
+                            this._remark.text = "";
+                            this._list.value =
+                            new List();
+                          });
+                          this.initState();
+                        }, (err) {
+                          setState(() {
+                            this._loading = false;
+                          });
+                          showCupertinoDialog(
+                              context: widget
+                                  .rootContext,
+                              builder: (BuildContext
+                              context) {
+                                return CupertinoAlertDialog(
+                                  content: Text(
+                                    err.error ?? "上报失败",
+                                    style: TextStyle(
+                                        fontSize:
+                                        18),
+                                  ),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      onPressed:
+                                          () {
+                                        Navigator.of(
+                                            context)
+                                            .pop();
+                                      },
+                                      child:
+                                      Text("好"),
+                                    ),
+                                  ],
+                                );
+                              });
+                        });
+                      }, (err) {
+                        print(err);
+                        setState(() {
+                          this._loading = false;
+                        });
+                        showCupertinoDialog(
+                            context:
+                            widget.rootContext,
+                            builder: (BuildContext
+                            context) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  err.error ?? "上报失败",
+                                  style: TextStyle(
+                                      fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(
+                                          context)
+                                          .pop();
+                                    },
+                                    child:
+                                    Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      });
+                    }
+                  },
+                  child: Text("是"),
+                )
+              ],
+            );
+          });
+    }
+  }
+
+  _commitRepair() {
+    if (this._repairType == null ||
+        (this._repairType.ILART == "N08" && (_bautl.text == null || _bautlNum.text == null))) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "请填写完整",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
+    } else if (this._repairType.ILART == "N08" && !_bautl.text.startsWith("WX")) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "备件编号请以 WX 开头",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
+    } else {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "是否上报故障",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("否"),
+                ),
+                CupertinoDialogAction(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      this._loading = true;
+                    });
+                    Uuid uuid = Uuid();
+                    String left = (new DateTime
+                        .now()
+                        .millisecondsSinceEpoch
+                        .toString() +
+                        uuid
+                            .v4()
+                            .substring(0, 3))
+                        .substring(0, 16);
+                    List<String> pictures = List();
+                    String video = '';
+                    String audio = '';
+                    if (this._list.value.length >
+                        0) {
+                      await HttpRequestRest.upload(
+                          this
+                              ._list
+                              .value
+                              .map((item) {
+                            return item;
+                          }).toList(), (res) {
+                        res.forEach((item) {
+                          if (Global.videoType
+                              .contains(item[
+                          "fileDownloadUri"]
+                              .split(".")
+                              .last
+                              .toLowerCase())) {
+                            video = item[
+                            "fileDownloadUri"];
+                          } else if (Global
+                              .audioType
+                              .contains(item[
+                          "fileDownloadUri"]
+                              .split(".")
+                              .last
+                              .toLowerCase())) {
+                            audio = item[
+                            "fileDownloadUri"];
+                          } else {
+                            pictures.add(item[
+                            "fileDownloadUri"]);
+                          }
+                        });
+
+                        String sapNo = "";
+                        HttpRequest.createRepairOrder(
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.PERNR,
+                            "011",
+                            this._repairType == null
+                                ? ''
+                                : this
+                                ._repairType
+                                .ILART,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            this._description ==
+                                null
+                                ? ''
+                                : this
+                                ._description
+                                .text,
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.CPLGR,
+                            Global.userInfo == null
+                                ? ''
+                                : Global
+                                .userInfo.MATYP,
+                            this._isStop ? "X" : '',
+                            left,
+                            this._bautl == null
+                                ? ''
+                                : this._bautl.text,
+                            this._bautlNum == null
+                                ? 0
+                                : int.parse(this._bautlNum.text),
+                                (res) {
+                              sapNo = left;
+//                          result = res;
+                              HttpRequestRest.malfunction(
+                                  left,
+                                  sapNo,
+                                  1,
+                                  pictures,
+                                  video,
+                                  audio,
+                                  this._problemDescription ==
+                                      null
+                                      ? ''
+                                      : this._selectProblemDescription[
+                                  "text"],
+                                  this._description == null
+                                      ? ''
+                                      : this
+                                      ._description
+                                      .text,
+                                  this._remark == null
+                                      ? ''
+                                      : this
+                                      ._remark
+                                      .text,
+                                  this._isStop,
+                                  Global.userInfo == null
+                                      ? ''
+                                      : Global.userInfo
+                                      .PERNR,
+                                  '',
+                                  '',
+                                  '新工单',
+                                  "",
+                                  this._device == null
+                                      ? ''
+                                      : this
+                                      ._device
+                                      .deviceName,
+                                  new DateTime.now()
+                                      .toString(),
+                                  '', (res) {
+                                setState(() {
+                                  this._loading = false;
+                                });
+                                _notification(
+                                    left,
+                                    res["WCPLGR"]);
+                                showCupertinoDialog(
+                                    context: widget
+                                        .rootContext,
+                                    builder:
+                                        (BuildContext
+                                    context) {
+                                      return CupertinoAlertDialog(
+                                        content: Text(
+                                          "上报成功",
+                                          style: TextStyle(
+                                              fontSize:
+                                              18),
+                                        ),
+                                        actions: <
+                                            Widget>[
+                                          CupertinoDialogAction(
+                                            onPressed:
+                                                () {
+                                              Navigator.of(
+                                                  context)
+                                                  .pop();
+                                            },
+                                            child: Text(
+                                                "好"),
+                                          ),
+                                        ],
+                                      );
+                                    });
+                                setState(() {
+                                  this._device = null;
+                                  this._repairType =
+                                  null;
+                                  this._problemDescription =
+                                  null;
+                                  this._bautlNum = new TextEditingController();
+                                  this._bautl = new TextEditingController();
+                                  this._description =
+                                  new TextEditingController();
+                                  this._remark =
+                                  new TextEditingController();
+                                  this._list.value =
+                                  new List();
+                                });
+                              }, (err) {
+                                setState(() {
+                                  this._loading = false;
+                                });
+                                showCupertinoDialog(
+                                    context: widget
+                                        .rootContext,
+                                    builder:
+                                        (BuildContext
+                                    context) {
+                                      return CupertinoAlertDialog(
+                                        content: Text(
+                                          err.error ?? "上报失败",
+                                          style: TextStyle(
+                                              fontSize:
+                                              18),
+                                        ),
+                                        actions: <
+                                            Widget>[
+                                          CupertinoDialogAction(
+                                            onPressed:
+                                                () {
+                                              Navigator.of(
+                                                  context)
+                                                  .pop();
+                                            },
+                                            child: Text(
+                                                "好"),
+                                          ),
+                                        ],
+                                      );
+                                    });
+                              });
+                            }, (err) {
+                          print(err);
+                          setState(() {
+                            this._loading = false;
+                          });
+                          showCupertinoDialog(
+                              context: widget
+                                  .rootContext,
+                              builder: (BuildContext
+                              context) {
+                                return CupertinoAlertDialog(
+                                  content: Text(
+                                    err.error ?? "上报失败",
+                                    style: TextStyle(
+                                        fontSize:
+                                        18),
+                                  ),
+                                  actions: <Widget>[
+                                    CupertinoDialogAction(
+                                      onPressed:
+                                          () {
+                                        Navigator.of(
+                                            context)
+                                            .pop();
+                                      },
+                                      child:
+                                      Text("好"),
+                                    ),
+                                  ],
+                                );
+                              });
+                        });
+                      }, (err) {
+                        print(err);
+                        setState(() {
+                          this._loading = false;
+                        });
+                        showCupertinoDialog(
+                            context:
+                            widget.rootContext,
+                            builder: (BuildContext
+                            context) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  err.error ?? "上报失败",
+                                  style: TextStyle(
+                                      fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(
+                                          context)
+                                          .pop();
+                                    },
+                                    child:
+                                    Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      });
+                    } else {
+                      String sapNo = "";
+                      await HttpRequest.createRepairOrder(
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.PERNR,
+                          "011",
+                          this._repairType == null
+                              ? ''
+                              : this
+                              ._repairType
+                              .ILART,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          this._description ==
+                              null
+                              ? ''
+                              : this
+                              ._description
+                              .text,
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.CPLGR,
+                          Global.userInfo == null
+                              ? ''
+                              : Global
+                              .userInfo.MATYP,
+                          this._isStop ? "X" : '',
+                          left,
+                          this._bautl == null
+                              ? ''
+                              : this._bautl.text,
+                          this._bautlNum == null
+                              ? 0
+                              : int.parse(this._bautlNum.text),
+                              (res) {
+                            sapNo = left;
+//                        result = res;
+                            HttpRequestRest.malfunction(
+                                left,
+                                sapNo,
+                                1,
+                                pictures,
+                                video,
+                                null,
+                                this._problemDescription ==
+                                    null
+                                    ? ''
+                                    : this._selectProblemDescription[
+                                "text"],
+                                this._description ==
+                                    null
+                                    ? ''
+                                    : this
+                                    ._description
+                                    .text,
+                                this
+                                    ._remark ==
+                                    null
+                                    ? ''
+                                    : this._remark.text,
+                                this._isStop,
+                                Global
+                                    .userInfo ==
+                                    null
+                                    ? ''
+                                    : Global
+                                    .userInfo.PERNR,
+                                '',
+                                '',
+                                '新工单',
+                                "",
+                                this
+                                    ._device ==
+                                    null
+                                    ? ''
+                                    : this
+                                    ._device
+                                    .deviceName,
+                                new DateTime.now()
+                                    .toString(),
+                                '', (res) {
+                              setState(() {
+                                this._loading = false;
+                              });
+                              _notification(
+                                  left,
+                                  result["WCPLGR"]);
+                              showCupertinoDialog(
+                                  context: widget
+                                      .rootContext,
+                                  builder: (BuildContext
+                                  context) {
+                                    return CupertinoAlertDialog(
+                                      content: Text(
+                                        "上报成功",
+                                        style: TextStyle(
+                                            fontSize:
+                                            18),
+                                      ),
+                                      actions: <Widget>[
+                                        CupertinoDialogAction(
+                                          onPressed:
+                                              () {
+                                            Navigator.of(
+                                                context)
+                                                .pop();
+                                          },
+                                          child:
+                                          Text("好"),
+                                        ),
+                                      ],
+                                    );
+                                  });
+                              setState(() {
+                                this._device = null;
+                                this._repairType = null;
+                                this._problemDescription =
+                                null;
+                                this._description.text =
+                                "";
+                                this._remark.text = "";
+                                this._bautl.text = null;
+                                this._bautlNum.text = null;
+                                this._list.value =
+                                new List();
+                              });
+                              this.initState();
+                            }, (err) {
+                              setState(() {
+                                this._loading = false;
+                              });
+                              showCupertinoDialog(
+                                  context: widget
+                                      .rootContext,
+                                  builder: (BuildContext
+                                  context) {
+                                    return CupertinoAlertDialog(
+                                      content: Text(
+                                        err.error ?? "上报失败",
+                                        style: TextStyle(
+                                            fontSize:
+                                            18),
+                                      ),
+                                      actions: <Widget>[
+                                        CupertinoDialogAction(
+                                          onPressed:
+                                              () {
+                                            Navigator.of(
+                                                context)
+                                                .pop();
+                                          },
+                                          child:
+                                          Text("好"),
+                                        ),
+                                      ],
+                                    );
+                                  });
+                            });
+                          }, (err) {
+                        print(err);
+                        setState(() {
+                          this._loading = false;
+                        });
+                        showCupertinoDialog(
+                            context:
+                            widget.rootContext,
+                            builder: (BuildContext
+                            context) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  err.error ?? "上报失败",
+                                  style: TextStyle(
+                                      fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(
+                                          context)
+                                          .pop();
+                                    },
+                                    child:
+                                    Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      });
+                    }
+                  },
+                  child: Text("是"),
+                )
+              ],
+            );
+          });
+    }
   }
 
 
@@ -266,6 +1363,25 @@ super.initState();
                           });
                         },
                       ),
+                      this._repairType != null && this._repairType.ILART == "N08" ? Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Column(
+                          children: [
+                            TextareaWidget(
+                              textEditingController: this._bautl,
+                              placeholder: "物料编号",
+                              lines: 1,
+                            ),
+                            Divider(height: 1,),
+                            TextareaWidget(
+                              textEditingController: this._bautlNum,
+                              placeholder: "物料数量",
+                              type: TextInputType.number,
+                              lines: 1,
+                            )
+                          ],
+                        ),
+                      ) : Container(),
                       Padding(
                         padding: EdgeInsets.only(top: 10),
                         child: _buildTextareaWithPicAndVideoWidget(),
@@ -290,10 +1406,13 @@ super.initState();
                               child: Text('上报故障', style: TextStyle(color: Colors.redAccent),),
                               color: Colors.transparent,
                               onPressed: () {
-                                bool flag = true;
-                                if (this._device == null ||
-                                    this._repairType == null ||
-                                    this._problemDescription == null) {
+                                if (_repairType != null) {
+                                  if (_repairType.ILART == "N08") {
+                                    _commitRepair();
+                                  } else {
+                                    _commitReport();
+                                  }
+                                } else {
                                   showCupertinoDialog(
                                       context: context,
                                       builder: (BuildContext context) {
@@ -309,403 +1428,6 @@ super.initState();
                                               },
                                               child: Text("好"),
                                             ),
-                                          ],
-                                        );
-                                      });
-                                } else {
-                                  showCupertinoDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return CupertinoAlertDialog(
-                                          content: Text(
-                                            "是否上报故障",
-                                            style: TextStyle(fontSize: 18),
-                                          ),
-                                          actions: <Widget>[
-                                            CupertinoDialogAction(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: Text("否"),
-                                            ),
-                                            CupertinoDialogAction(
-                                              onPressed: () async {
-                                                Navigator.of(context).pop();
-                                                setState(() {
-                                                  this._loading = true;
-                                                });
-                                                Uuid uuid = Uuid();
-                                                String left = (new DateTime.now().millisecondsSinceEpoch.toString() + uuid.v4().substring(0, 3)).substring(0, 16);
-                                                List<String> pictures = List();
-                                                String video = '';
-                                                String audio = '';
-                                                if (this._list.value.length > 0) {
-                                                  await HttpRequestRest.uploadForWeb(
-                                                      this._list.value.map((item) {
-                                                        return item;
-                                                      }).toList(), (res) {
-                                                    res.forEach((item) {
-                                                      if (Global.videoType.contains(item["fileDownloadUri"].split(".").last.toLowerCase())) {
-                                                        video = item["fileDownloadUri"];
-                                                      } else if (Global.audioType.contains(item["fileDownloadUri"].split(".").last.toLowerCase())) {
-                                                        audio = item["fileDownloadUri"];
-                                                      } else {
-                                                        pictures.add(
-                                                            item["fileDownloadUri"]);
-                                                      }
-                                                    });
-
-                                                    String sapNo = "";
-                                                    HttpRequest.createReportOrder(
-                                                        Global.userInfo == null
-                                                            ? ''
-                                                            : Global.userInfo.PERNR,
-                                                        Global.workShift == null
-                                                            ? ''
-                                                            : Global.workShift.TPLNR,
-                                                        this._repairType == null
-                                                            ? ''
-                                                            : this._repairType.ILART,
-                                                        this._device == null
-                                                            ? ''
-                                                            : this._device.deviceCode,
-                                                        this._device == null
-                                                            ? ''
-                                                            : this._device.positionCode,
-                                                        this._problemDescription == null
-                                                            ? ''
-                                                            : this
-                                                            ._problemDescription
-                                                            .group,
-                                                        this._selectProblemDescription == null
-                                                            ? ''
-                                                            : this
-                                                            ._selectProblemDescription["code"],
-                                                        this._description == null
-                                                            ? ''
-                                                            : this._description.text,
-                                                        Global.userInfo == null
-                                                            ? ''
-                                                            : Global.userInfo.CPLGR,
-                                                        Global.userInfo == null
-                                                            ? ''
-                                                            : Global.userInfo.MATYP,
-                                                        this._isStop ? "X" : '',
-                                                        left, (res) {
-                                                      sapNo = res['QMNUM'];
-                                                      result = res;
-                                                      HttpRequestRest.malfunction(
-                                                          left,
-                                                          sapNo,
-                                                          1,
-                                                          pictures,
-                                                          video,
-                                                          audio,
-                                                          this._problemDescription == null
-                                                              ? ''
-                                                              : this
-                                                              ._selectProblemDescription["text"],
-                                                          this._description == null
-                                                              ? ''
-                                                              : this._description.text,
-                                                          this._remark == null
-                                                              ? ''
-                                                              : this._remark.text,
-                                                          this._isStop,
-                                                          Global.userInfo == null
-                                                              ? ''
-                                                              : Global.userInfo.PERNR,
-                                                          '',
-                                                          '',
-                                                          '新工单',
-                                                          "",
-                                                          this._device == null
-                                                              ? ''
-                                                              : this._device.deviceName,
-                                                          new DateTime.now().toString(),
-                                                          '', (res) {
-                                                        setState(() {
-                                                          this._loading = false;
-                                                        });
-                                                        _notification(res["QMNUM"], res["WCPLGR"]);
-                                                        showCupertinoDialog(
-                                                            context: widget.rootContext,
-                                                            builder:
-                                                                (BuildContext context) {
-                                                              return CupertinoAlertDialog(
-                                                                content: Text(
-                                                                  "上报成功",
-                                                                  style: TextStyle(
-                                                                      fontSize: 18),
-                                                                ),
-                                                                actions: <Widget>[
-                                                                  CupertinoDialogAction(
-                                                                    onPressed: () {
-                                                                      Navigator.of(
-                                                                          context)
-                                                                          .pop();
-                                                                    },
-                                                                    child: Text("好"),
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            });
-                                                        setState(() {
-                                                          this._device = null;
-                                                          this._repairType = null;
-                                                          this._problemDescription = null;
-                                                          this._description =
-                                                          new TextEditingController();
-                                                          this._remark =
-                                                          new TextEditingController();
-                                                          this._list.value = new List();
-                                                        });
-                                                      }, (err) {
-                                                        setState(() {
-                                                          this._loading = false;
-                                                        });
-                                                        showCupertinoDialog(
-                                                            context: widget.rootContext,
-                                                            builder:
-                                                                (BuildContext context) {
-                                                              return CupertinoAlertDialog(
-                                                                content: Text(
-                                                                  "上报失败",
-                                                                  style: TextStyle(
-                                                                      fontSize: 18),
-                                                                ),
-                                                                actions: <Widget>[
-                                                                  CupertinoDialogAction(
-                                                                    onPressed: () {
-                                                                      Navigator.of(
-                                                                          context)
-                                                                          .pop();
-                                                                    },
-                                                                    child: Text("好"),
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            });
-                                                      });
-                                                    }, (err) {
-                                                      print(err);
-                                                      setState(() {
-                                                        this._loading = false;
-                                                      });
-                                                      showCupertinoDialog(
-                                                          context: widget.rootContext,
-                                                          builder:
-                                                              (BuildContext context) {
-                                                            return CupertinoAlertDialog(
-                                                              content: Text(
-                                                                "上报失败",
-                                                                style: TextStyle(
-                                                                    fontSize: 18),
-                                                              ),
-                                                              actions: <Widget>[
-                                                                CupertinoDialogAction(
-                                                                  onPressed: () {
-                                                                    Navigator.of(context)
-                                                                        .pop();
-                                                                  },
-                                                                  child: Text("好"),
-                                                                ),
-                                                              ],
-                                                            );
-                                                          });
-                                                    });
-                                                  }, (err) {
-                                                    print(err);
-                                                    setState(() {
-                                                      this._loading = false;
-                                                    });
-                                                    flag = false;
-                                                    showCupertinoDialog(
-                                                        context: widget.rootContext,
-                                                        builder:
-                                                            (BuildContext context) {
-                                                          return CupertinoAlertDialog(
-                                                            content: Text(
-                                                              "上报失败",
-                                                              style: TextStyle(
-                                                                  fontSize: 18),
-                                                            ),
-                                                            actions: <Widget>[
-                                                              CupertinoDialogAction(
-                                                                onPressed: () {
-                                                                  Navigator.of(
-                                                                      context)
-                                                                      .pop();
-                                                                },
-                                                                child: Text("好"),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        });
-                                                  });
-                                                } else {
-                                                  String sapNo = "";
-                                                  await HttpRequest.createReportOrder(
-                                                      Global.userInfo == null
-                                                          ? ''
-                                                          : Global.userInfo.PERNR,
-                                                      Global.workShift == null
-                                                          ? ''
-                                                          : Global.workShift.TPLNR,
-                                                      this._repairType == null
-                                                          ? ''
-                                                          : this._repairType.ILART,
-                                                      this._device == null
-                                                          ? ''
-                                                          : this._device.deviceCode,
-                                                      this._device == null
-                                                          ? ''
-                                                          : this._device.positionCode,
-                                                      this._problemDescription == null
-                                                          ? ''
-                                                          : this
-                                                          ._problemDescription
-                                                          .group,
-                                                      this._problemDescription == null
-                                                          ? ''
-                                                          : this
-                                                          ._selectProblemDescription["code"],
-                                                      this._description == null
-                                                          ? ''
-                                                          : this._description.text,
-                                                      Global.userInfo == null
-                                                          ? ''
-                                                          : Global.userInfo.CPLGR,
-                                                      Global.userInfo == null
-                                                          ? ''
-                                                          : Global.userInfo.MATYP,
-                                                      this._isStop ? "X" : '',
-                                                      left, (res) {
-                                                    sapNo = res['QMNUM'];
-                                                    result = res;
-                                                    HttpRequestRest.malfunction(
-                                                        left,
-                                                        sapNo,
-                                                        1,
-                                                        pictures,
-                                                        video,
-                                                        null,
-                                                        this._problemDescription == null
-                                                            ? ''
-                                                            : this
-                                                            ._selectProblemDescription["text"],
-                                                        this._description == null
-                                                            ? ''
-                                                            : this._description.text,
-                                                        this._remark == null
-                                                            ? ''
-                                                            : this._remark.text,
-                                                        this._isStop,
-                                                        Global.userInfo == null
-                                                            ? ''
-                                                            : Global.userInfo.PERNR,
-                                                        '',
-                                                        '',
-                                                        '新工单',
-                                                        "",
-                                                        this._device == null
-                                                            ? ''
-                                                            : this._device.deviceName,
-                                                        new DateTime.now().toString(),
-                                                        '', (res) {
-                                                      setState(() {
-                                                        this._loading = false;
-                                                      });
-                                                      _notification(result["QMNUM"], result["WCPLGR"]);
-                                                      showCupertinoDialog(
-                                                          context: widget.rootContext,
-                                                          builder:
-                                                              (BuildContext context) {
-                                                            return CupertinoAlertDialog(
-                                                              content: Text(
-                                                                "上报成功",
-                                                                style: TextStyle(
-                                                                    fontSize: 18),
-                                                              ),
-                                                              actions: <Widget>[
-                                                                CupertinoDialogAction(
-                                                                  onPressed: () {
-                                                                    Navigator.of(
-                                                                        context)
-                                                                        .pop();
-                                                                  },
-                                                                  child: Text("好"),
-                                                                ),
-                                                              ],
-                                                            );
-                                                          });
-                                                      setState(() {
-                                                        this._device = null;
-                                                        this._repairType = null;
-                                                        this._problemDescription = null;
-                                                        this._description.text = "";
-                                                        this._remark.text = "";
-                                                        this._list.value = new List();
-                                                      });
-                                                      this.initState();
-                                                    }, (err) {
-                                                      setState(() {
-                                                        this._loading = false;
-                                                      });
-                                                      showCupertinoDialog(
-                                                          context: widget.rootContext,
-                                                          builder:
-                                                              (BuildContext context) {
-                                                            return CupertinoAlertDialog(
-                                                              content: Text(
-                                                                "上报失败",
-                                                                style: TextStyle(
-                                                                    fontSize: 18),
-                                                              ),
-                                                              actions: <Widget>[
-                                                                CupertinoDialogAction(
-                                                                  onPressed: () {
-                                                                    Navigator.of(
-                                                                        context)
-                                                                        .pop();
-                                                                  },
-                                                                  child: Text("好"),
-                                                                ),
-                                                              ],
-                                                            );
-                                                          });
-                                                    });
-                                                  }, (err) {
-                                                    print(err);
-                                                    setState(() {
-                                                      this._loading = false;
-                                                    });
-                                                    showCupertinoDialog(
-                                                        context: widget.rootContext,
-                                                        builder:
-                                                            (BuildContext context) {
-                                                          return CupertinoAlertDialog(
-                                                            content: Text(
-                                                              "上报失败",
-                                                              style: TextStyle(
-                                                                  fontSize: 18),
-                                                            ),
-                                                            actions: <Widget>[
-                                                              CupertinoDialogAction(
-                                                                onPressed: () {
-                                                                  Navigator.of(context)
-                                                                      .pop();
-                                                                },
-                                                                child: Text("好"),
-                                                              ),
-                                                            ],
-                                                          );
-                                                        });
-                                                  });
-                                                }
-                                              },
-                                              child: Text("是"),
-                                            )
                                           ],
                                         );
                                       });

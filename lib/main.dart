@@ -1,14 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:html';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gztyre/api/HttpRequest.dart' as HttpRequestLocal;
+import 'package:gztyre/api/HttpRequestRest.dart';
+import 'package:gztyre/api/model/UserInfo.dart';
 import 'package:gztyre/commen/ChineseCupertinoLocalizations.dart';
 import 'package:gztyre/commen/Global.dart';
 import 'package:gztyre/pages/ContainerPage.dart';
 import 'package:gztyre/pages/login/LoginPage.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:gztyre/pages/login/MaintenanceGroupSelectionPage.dart';
+import 'package:gztyre/pages/login/WorkShiftSelectionPage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,56 +41,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
 
 
-//  Future<void> initPlatformState() async {
-//
-//    Global.jPush.getRegistrationID().then((rid) {
-//      print('---->rid:${rid}');
-//    });
-//
-//    if (Platform.isIOS) {
-//      Global.jPush.setup(
-//        appKey: Global.JPUSH_APP_KEY,
-//        channel: "developer-default",
-//        production: false,
-//        debug: true,
-//      );
-//      Global.jPush.applyPushAuthority(
-//          NotificationSettingsIOS(sound: true, alert: true, badge: true)
-//      );
-//    }
-//    String platformVersion;
-//
-//    try {
-//      /*监听响应方法的编写*/
-//      Global.jPush.addEventHandler(
-//          onReceiveNotification: (Map<String, dynamic> message) async {
-//            print(">>>>>>>>>>>>>>>>>flutter 接收到推送: $message");
-//            FlutterRingtonePlayer.playNotification(looping: false);
-//          },
-//          onOpenNotification: (Map<String, dynamic> message) async {
-//            FlutterRingtonePlayer.stop();
-//      }
-//      );
-//    } on PlatformException {
-//      platformVersion = '平台版本获取失败，请检查！';
-//    }
-//
-//    if (!mounted){
-//      return;
-//    }
-//  }
-
-
   @override
   void initState() {
-//    this.initPlatformState();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      title: 'Flutter Demo',
+      title: '故障维修',
       theme: CupertinoThemeData(
         primaryColor: Color.fromRGBO(253, 255, 255, 1),
         scaffoldBackgroundColor: Color.fromRGBO(231, 233, 234, 1),
@@ -112,42 +78,135 @@ class EntryWidget extends StatefulWidget {
 
 class _EntryWidgetState extends State<EntryWidget> {
 
+  _buildError(String desc) {
+    showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            content: Text(
+              desc,
+              style: TextStyle(fontSize: 18),
+            ),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("好"),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future getInfo(username, password) async {
+    if (username != null) {
+      Global.saveUsername(username);
+    } else {
+      Global.prefs.setString("username", '');
+    }
+    if (password != null) {
+      Global.savePassword(password);
+    } else {
+      Global.prefs.setString("password", '');
+    }
+    Global.logout();
+      await HttpRequestLocal.HttpRequest.searchUserInfo(username,
+              (UserInfo userInfo) async {
+            if (userInfo.PERNR == "" || userInfo.PERNR == null) {
+              _buildError("未找到账号，请确认账号信息或联系管理员重置密码");
+              return null;
+            } else {
+              return userInfo;
+            }
+          }, (err) {
+            _buildError("未找到用户");
+            return null;
+          }).then(
+              (userInfo) async {
+            if (userInfo != null) {
+              await Global.saveUserInfo(userInfo);
+              return await HttpRequestRest.exist(userInfo.PERNR,
+                      (bool isExist) async {
+                    if (isExist) {
+                      return true;
+                    } else {
+                      return await HttpRequestRest.registry(
+                          userInfo.PERNR, userInfo.ENAME, userInfo.SORTB, userInfo.SORTT,
+                          userInfo.CPLGR, userInfo.CPLTX, userInfo.MATYP, userInfo.MATYT,
+                          userInfo.WERKS, userInfo.TXTMD, userInfo.WCTYPE, () {
+                        return true;
+                      }, (err) {
+                        _buildError("系统繁忙");
+                        return null;
+                      });
+                    }
+                  }, (err) {
+                    _buildError("未找到账号，请确认账号信息或联系管理员重置密码");
+                    return false;
+                  }).then((success) async {
+                if (success != null && success) {
+                  return await HttpRequestRest.login(username, password,
+                          (String token) async {
+                        await Global.saveToken(token);
+                        return true;
+                      }, (err) async {
+                        await Global.logout();
+                        _buildError("账号或密码错误");
+                        return false;
+                      });
+                } else if (success != null && !success) {
+                  await Global.logout();
+                  return false;
+                } else {
+                  return false;
+                }
+              }).then((isLogin) async {
+                if (isLogin) {
+                  await HttpRequestRest.searchUser(userInfo.PERNR, (data) {
+                    Global.userInfo.phoneNumber = data["phoneNumber"];
+                    Global.saveUserInfo(Global.userInfo);
+                      if (Global.userInfo.WCTYPE != "是") {
+                        Navigator.push(
+                            context,
+                            new CupertinoPageRoute(
+                                builder: (context) => new WorkShiftSelectionPage(
+                                    userName: username)));
+                      } else {
+                        Navigator.push(
+                            context,
+                            new CupertinoPageRoute(
+                                builder: (context) =>
+                                new MaintenanceGroupSelectionPage()));
+                      }
+                  }, (err) {
+                  });
+                } else {
+                }
+              });
+            }
+          }
+      );
+  }
+
   @override
   void initState() {
-//    hasToken().then((val) {
-//      _hasToken = val;
-//      print(val);
-//    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     if (Global.token == null || Global.token == "" || (Global.maintenanceGroup == null && Global.workShift == null)) {
-      return new LoginPage();
+      print(window.location.href);
+      var uri = Uri.dataFromString(window.location.href);
+      var qp = uri.queryParameters;
+      print(qp);
+      var username = qp['appId'].replaceAll('#/', '');
+      var password = qp['appSecret'].replaceAll('#/', '');
+      getInfo(String.fromCharCodes(Base64Decoder().convert(username)), String.fromCharCodes(Base64Decoder().convert(password))).then((value) => new ContainerPage(rootContext: context,)).catchError((err) => Container());
     } else {
-//      Global.jPush.setAlias(Global.userInfo.PERNR);
-//      if ([
-//        "A01", "A02", "A3"
-//      ].contains(Global.userInfo.SORTB)) {
-//        Global.jPush.setTags(["维修工"]);
-//      }
-//      if ([
-//        "A04", "A05"
-//      ].contains(Global.userInfo.SORTB)) {
-//        Global.jPush.setTags(["领班"]);
-//      }
-//      if ([
-//        "A06", "A08"
-//      ].contains(Global.userInfo.SORTB)) {
-//        Global.jPush.setTags(["主管"]);
-//      }
-//      if ([
-//        "A07"
-//      ].contains(Global.userInfo.SORTB)) {
-//        Global.jPush.setTags(["工程师"]);
-//      }
-      return new ContainerPage(rootContext: context,);
+      Global.logout();
+      window.open("http://192.168.6.211/#/passport/login", '_self');
     }
   }
 }

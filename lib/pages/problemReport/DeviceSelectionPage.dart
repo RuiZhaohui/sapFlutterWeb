@@ -13,16 +13,16 @@ import 'package:gztyre/components/ListTitleWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
 import 'package:gztyre/components/SearchBar.dart';
 import 'package:gztyre/components/TextButtonWidget.dart';
-import 'package:gztyre/pages/orderCenter/planOrder/MaterielPage.dart';
+import 'package:gztyre/pages/orderCenter/MaterielPage.dart';
 import 'package:gztyre/pages/problemReport/ChildrenDeviceSelectionPage.dart';
 import 'package:gztyre/pages/problemReport/ChildrenPositonSelectionPage.dart';
 
 class DeviceSelectionPage extends StatefulWidget {
   DeviceSelectionPage(
       {Key key,
-      @required this.selectItem,
-      this.isAddMaterial = false,
-      this.AUFNR})
+        @required this.selectItem,
+        this.isAddMaterial = false,
+        this.AUFNR})
       : super(key: key);
 
   final Device selectItem;
@@ -51,49 +51,71 @@ class _DeviceSelectionPageState extends State<DeviceSelectionPage> {
   _listPositionAndDevice() async {
     this._loading = true;
     HttpRequestRest.listPosition(Global.userInfo.PERNR,
-        (List<FunctionPosition> list) {
-      this._position = list;
-      this._tempPosition.addAll(list);
-      setState(() {
-        this._loading = false;
-      });
-    }, (err) {
-      print(err);
-      setState(() {
-        this._loading = false;
-      });
-    });
+            (List<FunctionPosition> list) {
+          this._position = list;
+          this._tempPosition.addAll(list);
+          setState(() {
+            this._loading = false;
+          });
+
+          FunctionPosition position = _position.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
+          if (position.children.length > 0) {
+            Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+              return ChildrenPositionSelectionPage(position: position.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+            })).then((val) {
+              if (val["isOk"]) {
+                this._selectItem = val["item"];
+                Navigator.of(context).pop(val);
+              }
+            });
+          } else if (position.deviceChildren.length > 0) {
+
+            Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+              return ChildrenDeviceSelectionPage(device: position.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+            })).then((val) {
+              if (val["isOk"]) {
+                this._selectItem = val["item"];
+                Navigator.of(context).pop(val);
+              }
+            });
+          }
+        }, (err) {
+          print(err);
+          setState(() {
+            this._loading = false;
+          });
+        });
   }
 
   List<Widget> createWidgetList(List<FunctionPosition> list) {
     List<Widget> deviceList = [];
     list.forEach((item) {
-        deviceList.add(ListItemWidget(
-            title: Text(item.positionName),
-          onTap: () {
-              if (item.children.length > 0) {
-                Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
-                  return ChildrenPositionSelectionPage(position: item.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
-                })).then((val) {
-                  if (val["isOk"]) {
-                    this._selectItem = val["item"];
-                    Navigator.of(context).pop(val);
-                  }
-                });
-              } else if (item.deviceChildren.length > 0) {
-
-                Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
-                  return ChildrenDeviceSelectionPage(device: item.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
-                })).then((val) {
-                  if (val["isOk"]) {
-                    this._selectItem = val["item"];
-                    Navigator.of(context).pop(val);
-                  }
-                });
+      deviceList.add(ListItemWidget(
+        title: Text(item.positionName),
+        onTap: () {
+          if (item.children.length > 0) {
+            Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+              return ChildrenPositionSelectionPage(position: item.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+            })).then((val) {
+              if (val["isOk"]) {
+                this._selectItem = val["item"];
+                Navigator.of(context).pop(val);
               }
-          },
-          ),
-        );
+            });
+          } else if (item.deviceChildren.length > 0) {
+
+            Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+              return ChildrenDeviceSelectionPage(device: item.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+            })).then((val) {
+              if (val["isOk"]) {
+                this._selectItem = val["item"];
+                Navigator.of(context).pop(val);
+              }
+            });
+          }
+        },
+      ),
+      );
     });
     return deviceList;
   }
@@ -238,11 +260,11 @@ class _DeviceSelectionPageState extends State<DeviceSelectionPage> {
                     child: SafeArea(
                         child: CupertinoScrollbar(
                             child: ListView(
-                      children: <Widget>[
+                              children: <Widget>[
                                 SearchBar(controller: this._shiftController),
-                        ..._createWidgetList(_allList, _position),
-                      ],
-                    ))),
+                                ..._createWidgetList(_allList, _position),
+                              ],
+                            ))),
                   ));
             }),
         onWillPop: () async {

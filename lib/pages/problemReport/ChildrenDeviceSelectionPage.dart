@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gztyre/api/model/Device.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/TextButtonWidget.dart';
-import 'package:gztyre/pages/orderCenter/planOrder/MaterielPage.dart';
+import 'package:gztyre/pages/orderCenter/MaterielPage.dart';
 
 class ChildrenDeviceSelectionPage extends StatefulWidget {
   ChildrenDeviceSelectionPage({Key key, @required this.device, @required this.selectItem,this.isAddMaterial = false,
@@ -152,12 +152,12 @@ class _ChildrenDeviceSelectionPageState
                       device: this._selectItem,
                     );
                   })).then((val) {
-                    if (val) {
-                      Navigator.of(context).pop({"item": this._selectItem, "isOk": true});
-                    }
+                if (val) {
+                  Navigator.of(context).pop({"item": this._selectItem, "isOk": true});
+                }
               });
             } else
-            Navigator.pop(context, {"item": this._selectItem, "isOk": true});
+              Navigator.pop(context, {"item": this._selectItem, "isOk": true});
           },
           text: "确定",
         ),
@@ -165,11 +165,11 @@ class _ChildrenDeviceSelectionPageState
       child: SafeArea(
           child: CupertinoScrollbar(
               child: ListView(
-        children: <Widget>[
+                children: <Widget>[
 //                  SearchBar(controller: this._shiftController),
-          ...createWidgetList(widget.device),
-        ],
-      ))),
+                  ...createWidgetList(widget.device),
+                ],
+              ))),
     );
   }
 }

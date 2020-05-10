@@ -10,7 +10,7 @@ import 'package:gztyre/components/ListItemShopChartWidget.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
 import 'package:gztyre/components/TextButtonWidget.dart';
-import 'package:gztyre/pages/orderCenter/noPlanOrder/MaterielDetailPage.dart';
+import 'package:gztyre/pages/orderCenter/MaterielDetailPage.dart';
 import 'package:gztyre/utils/screen_utils.dart';
 
 class MaterielPage extends StatefulWidget {
@@ -102,6 +102,7 @@ class _MaterielPageState extends State<MaterielPage> {
     for (int i = 0; i < list.length; i++) {
       Widget listItem = ListItemShopChartWidget(
         title: Text(list[i].MAKTX != "" ? list[i].MAKTX : list[i].MATNR),
+        number: list[i].MENGE,
         onTap: (val) {
           list[i].MENGE = val;
         },
@@ -120,6 +121,15 @@ class _MaterielPageState extends State<MaterielPage> {
     setState(() {
       this._loading = true;
     });
+    print('查询已领取物料');
+    await HttpRequest.searchMaterialTemp(widget.AUFNR, (list) {
+      _requireMaterielList.addAll(list);
+    },
+            (err) => {
+          setState(() {
+            this._loading = false;
+          })
+        });
     return await HttpRequest.searchBom(EQUNR, (list) {
       this._materielList = list;
       setState(() {
@@ -149,11 +159,11 @@ class _MaterielPageState extends State<MaterielPage> {
     }
     this._loading = true;
     setState(() {});
-    HttpRequest.searchBom(widget.device.deviceCode, (list) {
-//      print(list);
-    }, (err) {
-//      print(err);
-    });
+//    HttpRequest.searchBom(widget.device.deviceCode, (list) {
+////      print(list);
+//    }, (err) {
+////      print(err);
+//    });
     this._listMaterielFuture = this._listMateriels(widget.device.deviceCode);
   }
 

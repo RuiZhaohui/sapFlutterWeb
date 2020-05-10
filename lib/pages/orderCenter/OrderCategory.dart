@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gztyre/components/DividerBetweenIconListItem.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
+import 'package:gztyre/pages/orderCenter/assisantOrder/AssisantOrderCenterHomePage.dart';
+import 'package:gztyre/pages/orderCenter/blockOrder/BlockOrderCenterHomePage.dart';
 import 'package:gztyre/pages/orderCenter/noPlanOrder/NoPlanOrderCenterHomePage.dart';
 import 'package:gztyre/pages/orderCenter/planOrder/PlanOrderCenterHomePage.dart';
 
@@ -46,7 +48,8 @@ class _OrderCategoryState extends State<OrderCategory> {
                             ],
                           ),
                           onTap: () {
-                            Navigator.of(widget.rootContext).push(CupertinoPageRoute(builder: (BuildContext context) {
+                            Navigator.of(widget.rootContext).push(CupertinoPageRoute(
+                              builder: (BuildContext context) {
                               return PlanOrderCenterHomePage(rootContext: context,);
                             }, settings: RouteSettings(name: "planOrderHome"),));
                           },
@@ -86,24 +89,10 @@ class _OrderCategoryState extends State<OrderCategory> {
                             ],
                           ),
                           onTap: () {
-                            showCupertinoDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CupertinoAlertDialog(
-                                    content: Text(
-                                      "暂未支持",
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    actions: <Widget>[
-                                      CupertinoDialogAction(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("好"),
-                                      ),
-                                    ],
-                                  );
-                                });
+                            Navigator.of(widget.rootContext).push(CupertinoPageRoute(
+                              builder: (BuildContext context) {
+                                return AssisantOrderCenterHomePage(rootContext: context,);
+                              }, settings: RouteSettings(name: "assisantOrderHome"),));
                           },
                         ),
                         DividerBetweenIconListItem(),
@@ -121,24 +110,10 @@ class _OrderCategoryState extends State<OrderCategory> {
                             ],
                           ),
                           onTap: () {
-                            showCupertinoDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CupertinoAlertDialog(
-                                    content: Text(
-                                      "暂未支持",
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    actions: <Widget>[
-                                      CupertinoDialogAction(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text("好"),
-                                      ),
-                                    ],
-                                  );
-                                });
+                            Navigator.of(widget.rootContext).push(CupertinoPageRoute(
+                              builder: (BuildContext context) {
+                                return BlockOrderCenterHomePage(rootContext: context,);
+                              }, settings: RouteSettings(name: "blockOrderHome"),));
                           },
                         ),
                       ],

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:gztyre/api/model/Device.dart';
+import 'package:gztyre/api/model/DeviceTypeDetail.dart';
 import 'package:gztyre/api/model/FunctionPositionWithDevice.dart';
 import 'package:gztyre/api/model/Materiel.dart';
 import 'package:gztyre/api/model/Order.dart';
@@ -9,7 +10,9 @@ import 'package:gztyre/api/model/ProblemDescription.dart';
 import 'package:gztyre/api/model/RepairHistory.dart';
 import 'package:gztyre/api/model/RepairOrder.dart' as repair;
 import 'package:gztyre/api/model/RepairType.dart';
+import 'package:gztyre/api/model/RepairTypeDetail.dart';
 import 'package:gztyre/api/model/ReportOrder.dart';
+import 'package:gztyre/api/model/SubmitMateriel.dart';
 import 'package:gztyre/api/model/UserInfo.dart';
 import 'package:gztyre/api/model/WorkShift.dart';
 import 'package:gztyre/api/model/Worker.dart';
@@ -29,16 +32,16 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchPernr", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtCplgr", attributes: {"xmlns": ""});
-          builder.element("EtMatyp", attributes: {"xmlns": ""});
-          builder.element("Pernr", attributes: {"xmlns": ""}, nest: userId);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchPernr", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtCplgr", attributes: {"xmlns": ""});
+              builder.element("EtMatyp", attributes: {"xmlns": ""});
+              builder.element("Pernr", attributes: {"xmlns": ""}, nest: userId);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -65,15 +68,15 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchTplnr", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtData", attributes: {"xmlns": ""});
-          builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchTplnr", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -81,9 +84,9 @@ class XmlUtils {
       String stringXml) {
     var document = xml.parse(stringXml);
     List<FunctionPositionWithDevice> list =
-        document.findAllElements("item").map((e) {
+    document.findAllElements("item").map((e) {
       FunctionPositionWithDevice functionPositionWithDevice =
-          new FunctionPositionWithDevice();
+      new FunctionPositionWithDevice();
       functionPositionWithDevice.TPLNR = e.findAllElements("Tplnr").first.text;
       functionPositionWithDevice.PLTXT = e.findAllElements("Pltxt").first.text;
       functionPositionWithDevice.TPLNR2 =
@@ -112,15 +115,15 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchIngrp", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtData", attributes: {"xmlns": ""});
-          builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchIngrp", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -144,72 +147,72 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchOrder", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
-            builder.element("Pernr", nest: PERNR);
-            builder.element("Cplgr", nest: CPLGR);
-            builder.element("Matyp", nest: MATYP);
-            builder.element("Sortb", nest: SORTB);
-            builder.element("Wctype", nest: WCTYPE);
-            builder.element("Asttx", nest: ASTTX);
-          });
-          builder.element("ItOrder", attributes: {"xmlns": ""});
-          builder.element("ItWxfz", attributes: {"xmlns": ""}, nest: () {
-            ItWxfz.map((item) {
-              return builder.element("item", nest: () {
-                builder.element("Wxfz", nest: item);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchOrder", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Cplgr", nest: CPLGR);
+                builder.element("Matyp", nest: MATYP);
+                builder.element("Sortb", nest: SORTB);
+                builder.element("Wctype", nest: WCTYPE);
+                builder.element("Asttx", nest: ASTTX);
               });
-            }).toList();
+              builder.element("ItOrder", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""}, nest: () {
+                ItWxfz.map((item) {
+                  return builder.element("item", nest: () {
+                    builder.element("Wxfz", nest: item);
+                  });
+                }).toList();
+              });
+            });
           });
         });
-      });
-    });
     return builder.build();
   }
 
   static List<Order> readOrderXml(String stringXml) {
     var document = xml.parse(stringXml);
-   try {
-     List<Order> list = document.findAllElements("item").map((e) {
-       Order order = new Order();
-       order.PERNR = e.findElements("Pernr").first.text;
-       order.KTEXT = e.findElements("Ktext").first.text;
-       order.CPLTX = e.findElements("Cpltx").first.text;
-       order.QMNUM = e.findElements("Qmnum").first.text;
-       order.QMTXT = e.findElements("Qmtxt").first.text;
-       order.PERNR1 = e.findElements("Pernr1").first.text;
-       order.AUFNR = e.findElements("Aufnr").first.text;
-       order.AUFTEXT = e.findElements("Auftext").first.text;
-       order.EQUNR = e.findElements("Equnr").first.text;
-       order.EQKTX = e.findElements("Eqktx").first.text;
-       order.TPLNR = e.findElements("Tplnr").first.text;
-       order.PLTXT = e.findElements("Pltxt").first.text;
-       order.BAUTL = e.findElements("Bautl").first.text;
-       order.MAKTX = e.findElements("Maktx").first.text;
-       order.ASTTX = e.findElements("Asttx").first.text;
-       order.CPLGR = e.findElements("Cplgr").first.text;
-       order.COLORS = e.findElements("Colors").first.text;
-       order.WCPLGR = e.findElements("Wcplgr").first.text;
-       order.WCPLTX = e.findElements("Wcpltx").first.text;
-       order.WXFZ = e.findElements("Wxfz").first.text;
-       order.APPSTATUS = e.findElements("Appstatus").first.text;
-       order.ILART = e.findAllElements("Ilart").first.text;
-       order.ILATX = e.findAllElements("Ilatx").first.text;
-       order.ERDAT = e.findElements("Erdat").first.text;
-       order.ERTIM = e.findElements("Ertim").first.text;
-       order.ERDAT2 = e.findElements("Erdat2").first.text;
-       order.ERTIM2 = e.findElements("Ertim2").first.text;
-       order.ERDAT3 = e.findElements("Erdat3").first.text;
-       order.ERTIM3 = e.findElements("Ertim3").first.text;
-       return order;
-     }).toList();
-     return list;
-   } catch (e) {
-     throw DioError();
-   }
+    try {
+      List<Order> list = document.findAllElements("item").map((e) {
+        Order order = new Order();
+        order.PERNR = e.findElements("Pernr").first.text;
+        order.KTEXT = e.findElements("Ktext").first.text;
+        order.CPLTX = e.findElements("Cpltx").first.text;
+        order.QMNUM = e.findElements("Qmnum").first.text;
+        order.QMTXT = e.findElements("Qmtxt").first.text;
+        order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.AUFNR = e.findElements("Aufnr").first.text;
+        order.AUFTEXT = e.findElements("Auftext").first.text;
+        order.EQUNR = e.findElements("Equnr").first.text;
+        order.EQKTX = e.findElements("Eqktx").first.text;
+        order.TPLNR = e.findElements("Tplnr").first.text;
+        order.PLTXT = e.findElements("Pltxt").first.text;
+        order.BAUTL = e.findElements("Bautl").first.text;
+        order.MAKTX = e.findElements("Maktx").first.text;
+        order.ASTTX = e.findElements("Asttx").first.text;
+        order.CPLGR = e.findElements("Cplgr").first.text;
+        order.COLORS = e.findElements("Colors").first.text;
+        order.WCPLGR = e.findElements("Wcplgr").first.text;
+        order.WCPLTX = e.findElements("Wcpltx").first.text;
+        order.WXFZ = e.findElements("Wxfz").first.text;
+        order.APPSTATUS = e.findElements("Appstatus").first.text;
+        order.ILART = e.findAllElements("Ilart").first.text;
+        order.ILATX = e.findAllElements("Ilatx").first.text;
+        order.ERDAT = e.findElements("Erdat").first.text;
+        order.ERTIM = e.findElements("Ertim").first.text;
+        order.ERDAT2 = e.findElements("Erdat2").first.text;
+        order.ERTIM2 = e.findElements("Ertim2").first.text;
+        order.ERDAT3 = e.findElements("Erdat3").first.text;
+        order.ERTIM3 = e.findElements("Ertim3").first.text;
+        return order;
+      }).toList();
+      return list;
+    } catch (e) {
+      throw DioError();
+    }
   }
 
   static xml.XmlNode buildNoPlanOrderXml(String PERNR, String CPLGR, String MATYP,
@@ -322,6 +325,153 @@ class XmlUtils {
   }
 
   static List<Order> readPlanOrderXml(String stringXml) {
+    var document = xml.parse(stringXml);
+    try {
+      List<Order> list = document.findAllElements("item").map((e) {
+        Order order = new Order();
+        order.PERNR = e.findElements("Pernr").first.text;
+        order.KTEXT = e.findElements("Ktext").first.text;
+        order.CPLTX = e.findElements("Cpltx").first.text;
+        order.QMNUM = e.findElements("Qmnum").first.text;
+        order.QMTXT = e.findElements("Qmtxt").first.text;
+        order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.AUFNR = e.findElements("Aufnr").first.text;
+        order.AUFTEXT = e.findElements("Auftext").first.text;
+        order.EQUNR = e.findElements("Equnr").first.text;
+        order.EQKTX = e.findElements("Eqktx").first.text;
+        order.TPLNR = e.findElements("Tplnr").first.text;
+        order.PLTXT = e.findElements("Pltxt").first.text;
+        order.BAUTL = e.findElements("Bautl").first.text;
+        order.MAKTX = e.findElements("Maktx").first.text;
+        order.ASTTX = e.findElements("Asttx").first.text;
+        order.CPLGR = e.findElements("Cplgr").first.text;
+        order.COLORS = e.findElements("Colors").first.text;
+        order.WCPLGR = e.findElements("Wcplgr").first.text;
+        order.WCPLTX = e.findElements("Wcpltx").first.text;
+        order.WXFZ = e.findElements("Wxfz").first.text;
+        order.APPSTATUS = e.findElements("Appstatus").first.text;
+        order.ILART = e.findAllElements("Ilart").first.text;
+        order.ILATX = e.findAllElements("Ilatx").first.text;
+        order.ERDAT = e.findElements("Erdat").first.text;
+        order.ERTIM = e.findElements("Ertim").first.text;
+        order.ERDAT2 = e.findElements("Erdat2").first.text;
+        order.ERTIM2 = e.findElements("Ertim2").first.text;
+        order.ERDAT3 = e.findElements("Erdat3").first.text;
+        order.ERTIM3 = e.findElements("Ertim3").first.text;
+        order.NPLDA = e.findAllElements("Nplda").first.text;
+        return order;
+      }).toList();
+      return list;
+    } catch (e) {
+      throw DioError();
+    }
+  }
+
+  static xml.XmlNode buildPlanOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART) {
+    var builder = new xml.XmlBuilder();
+    builder.element("Envelope",
+        attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
+        nest: () {
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchJhOrder", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Wctype", nest: WCTYPE);
+                builder.element("Asttx", nest: ASTTX);
+                builder.element("Auart", nest: AUART);
+              });
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""});
+            });
+          });
+        });
+    return builder.build();
+  }
+
+  static List<RepairTypeDetail> readPlanOrderTypeXml(String stringXml) {
+    var document = xml.parse(stringXml);
+    try {
+      List<RepairTypeDetail> list = document.findAllElements("item").map((e) {
+        RepairTypeDetail order = new RepairTypeDetail();
+        order.ILART = e.findElements("Ilart").first.text;
+        order.ILATX = e.findElements("Ilatx").first.text;
+        order.QUANTITY = e.findElements("Quantity").first.text;
+        return order;
+      }).toList();
+      return list;
+    } catch (e) {
+      throw DioError();
+    }
+  }
+
+  static xml.XmlNode buildPlanOrderDeviceTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART) {
+    var builder = new xml.XmlBuilder();
+    builder.element("Envelope",
+        attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
+        nest: () {
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchJhEquOrder", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Wctype", nest: WCTYPE);
+                builder.element("Asttx", nest: ASTTX);
+                builder.element("Auart", nest: AUART);
+                builder.element("Ilart", nest: ILART);
+              });
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""});
+            });
+          });
+        });
+    return builder.build();
+  }
+
+  static List<DeviceTypeDetail> readPlanOrderDeviceTypeXml(String stringXml) {
+    var document = xml.parse(stringXml);
+    try {
+      List<DeviceTypeDetail> list = document.findAllElements("item").map((e) {
+        DeviceTypeDetail order = new DeviceTypeDetail();
+        order.EQUNR = e.findElements("Equnr").first.text;
+        order.EQKTX = e.findElements("Eqktx").first.text;
+        order.QUANTITY = e.findElements("Quantity").first.text;
+        return order;
+      }).toList();
+      return list;
+    } catch (e) {
+      throw DioError();
+    }
+  }
+
+  static xml.XmlNode buildPlanOrderByDeviceTypeAndOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART, String EQUNR) {
+    var builder = new xml.XmlBuilder();
+    builder.element("Envelope",
+        attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
+        nest: () {
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchJhwxOrder", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Wctype", nest: WCTYPE);
+                builder.element("Asttx", nest: ASTTX);
+                builder.element("Auart", nest: AUART);
+                builder.element("Ilart", nest: ILART);
+                builder.element("Equnr", nest: EQUNR);
+              });
+              builder.element("ItOrder", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""});
+            });
+          });
+        });
+    return builder.build();
+  }
+
+  static List<Order> readPlanOrderByDeviceTypeAndOrderTypeXml(String stringXml) {
     var document = xml.parse(stringXml);
     try {
       List<Order> list = document.findAllElements("item").map((e) {
@@ -521,14 +671,14 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchIlart", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtData", attributes: {"xmlns": ""});
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchIlart", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -537,14 +687,14 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchOrdermess", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("Qmnum", attributes: {"xmlns": ""}, nest: QMNUM);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchOrdermess", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("Qmnum", attributes: {"xmlns": ""}, nest: QMNUM);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -569,7 +719,7 @@ class XmlUtils {
     order.PLTXT = document.findAllElements("Pltxt").first.text;
     order.ASTXT = document.findAllElements("Astxt").first.text;
     order.MSAUS =
-        document.findAllElements("Msaus").first.text == "X" ? true : false;
+    document.findAllElements("Msaus").first.text == "X" ? true : false;
     order.ERDAT = document.findAllElements("Erdat").first.text;
     order.ERTIM = document.findAllElements("Ertim").first.text;
     return order;
@@ -580,16 +730,16 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchWxrec", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("Aufnr", attributes: {"xmlns": ""}, nest: AUFNR);
-          builder.element("EtData", attributes: {"xmlns": ""});
-          builder.element("EtResb", attributes: {"xmlns": ""});
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchWxrec", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("Aufnr", attributes: {"xmlns": ""}, nest: AUFNR);
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("EtResb", attributes: {"xmlns": ""});
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -653,15 +803,15 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchInfo", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IvAufnr", attributes: {"xmlns": ""}, nest: AUFNR);
-          builder.element("ItInfo", attributes: {"xmlns": ""});
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchInfo", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IvAufnr", attributes: {"xmlns": ""}, nest: AUFNR);
+              builder.element("ItInfo", attributes: {"xmlns": ""});
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -771,16 +921,16 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchKatalogart", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtData", attributes: {"xmlns": ""});
-          builder.element("Katalogart",
-              attributes: {"xmlns": ""}, nest: Katalogart);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchKatalogart", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("Katalogart",
+                  attributes: {"xmlns": ""}, nest: Katalogart);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -832,28 +982,28 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmCreateIw21", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtMessage", attributes: {"xmlns": ""});
-          builder.element("IData", attributes: {"xmlns": ""}, nest: () {
-            builder.element("Pernr", nest: PERNR);
-            builder.element("Ingrp", nest: INGRP);
-            builder.element("Ilart", nest: ILART);
-            builder.element("Equnr", nest: EQUNR);
-            builder.element("Tplnr", nest: TPLNR);
-            builder.element("Fegrp", nest: FEGRP);
-            builder.element("Fecod", nest: FECOD);
-            builder.element("Fetxt", nest: FETXT);
-            builder.element("Cplgr", nest: CPLGR);
-            builder.element("Matyp", nest: MATYP);
-            builder.element("Msaus", nest: MSAUS);
-            builder.element("Apptradeno", nest: APPTRADENO);
+          builder.element("Body", nest: () {
+            builder.element("ZpmCreateIw21", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtMessage", attributes: {"xmlns": ""});
+              builder.element("IData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Ingrp", nest: INGRP);
+                builder.element("Ilart", nest: ILART);
+                builder.element("Equnr", nest: EQUNR);
+                builder.element("Tplnr", nest: TPLNR);
+                builder.element("Fegrp", nest: FEGRP);
+                builder.element("Fecod", nest: FECOD);
+                builder.element("Fetxt", nest: FETXT);
+                builder.element("Cplgr", nest: CPLGR);
+                builder.element("Matyp", nest: MATYP);
+                builder.element("Msaus", nest: MSAUS);
+                builder.element("Apptradeno", nest: APPTRADENO);
+              });
+            });
           });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -861,9 +1011,10 @@ class XmlUtils {
     var document = xml.parse(stringXml);
     try {
       if (document.findAllElements("Type").first.text == "E") {
-        throw DioError();
+        throw DioError(error: document.findAllElements("MessageV1").first.text);
       }
     } catch (e) {
+      if (e is DioError) throw e;
       throw DioError();
     }
     Map<String, String> map = new Map();
@@ -902,47 +1053,50 @@ class XmlUtils {
       String MATYP,
       String MSAUS,
       String APPTRADENO,
-      String BAUTL) {
+      String BAUTL,
+      int Gaming) {
     var builder = new xml.XmlBuilder();
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmCreateOrder", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("ItReturn", attributes: {"xmlns": ""});
-          builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
-            builder.element("Pernr", nest: PERNR);
-            builder.element("Ingrp", nest: INGRP);
-            builder.element("Ilart", nest: ILART);
-            builder.element("Qmnum", nest: QMNUM);
-            builder.element("Equnr", nest: EQUNR);
-            builder.element("Tplnr", nest: TPLNR);
-            builder.element("Fegrp", nest: FEGRP);
-            builder.element("Fecod", nest: FECOD);
-            builder.element("Fetxt", nest: FETXT);
-            builder.element("Cplgr", nest: CPLGR);
-            builder.element("Matyp", nest: MATYP);
-            builder.element("Msaus", nest: MSAUS);
-            builder.element("Apptradeno", nest: APPTRADENO);
-            builder.element("Bault", nest: BAUTL ?? "");
+          builder.element("Body", nest: () {
+            builder.element("ZpmCreateOrder", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("ItReturn", attributes: {"xmlns": ""});
+              builder.element("IAppData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Ingrp", nest: INGRP);
+                builder.element("Ilart", nest: ILART);
+                builder.element("Qmnum", nest: QMNUM);
+                builder.element("Equnr", nest: EQUNR);
+                builder.element("Tplnr", nest: TPLNR);
+                builder.element("Fegrp", nest: FEGRP);
+                builder.element("Fecod", nest: FECOD);
+                builder.element("Fetxt", nest: FETXT);
+                builder.element("Cplgr", nest: CPLGR);
+                builder.element("Matyp", nest: MATYP);
+                builder.element("Msaus", nest: MSAUS);
+                builder.element("Apptradeno", nest: APPTRADENO);
+                builder.element("Bautl", nest: BAUTL ?? "");
+                builder.element("Gaming", nest: Gaming == null ? '' : Gaming.toString());
+              });
+            });
           });
         });
-      });
-    });
     return builder.build();
   }
 
   static String readRepairOrderXml(String stringXml) {
     var document = xml.parse(stringXml);
     try {
-      if (document.findAllElements("Type").first.text == "E") {
-        throw DioError();
+      if (document.findAllElements("Type").any((element) => element.text == "E")) {
+        throw DioError(error: document.findAllElements("MessageV1").first.text);
       } else {
         return document.findAllElements("Aufnr").first.text;
       }
     } catch (e) {
+      if (e is DioError) throw e;
       throw DioError();
     }
   }
@@ -962,34 +1116,34 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmChangeOrderStatus", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IData", attributes: {"xmlns": ""}, nest: () {
-            builder.element("Pernr", nest: PERNR);
-            builder.element("Qmnum", nest: QMNUM);
-            builder.element("Aufnr", nest: AUFNR);
-            builder.element("Appstatus", nest: APPSTATUS);
-            builder.element("Apptradeno", nest: APPTRADENO);
-            builder.element("Urgrp", nest: URGRP);
-            builder.element("Urcod", nest: URCOD);
-            builder.element("Equnr", nest: EQUNR);
-            builder.element("Ktext", nest: KTEXT);
-          });
-          builder.element("ItData", attributes: {"xmlns": ""}, nest: () {
-            if (list != null) {
-              list.map((item) {
-                return builder.element("item", nest: () {
-                  builder.element("Aufnr", nest: AUFNR);
-                  builder.element("Pernr1", nest: item.PERNR);
-                });
-              }).toList();
-            }
+          builder.element("Body", nest: () {
+            builder.element("ZpmChangeOrderStatus", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Qmnum", nest: QMNUM);
+                builder.element("Aufnr", nest: AUFNR);
+                builder.element("Appstatus", nest: APPSTATUS);
+                builder.element("Apptradeno", nest: APPTRADENO);
+                builder.element("Urgrp", nest: URGRP);
+                builder.element("Urcod", nest: URCOD);
+                builder.element("Equnr", nest: EQUNR);
+                builder.element("Ktext", nest: KTEXT);
+              });
+              builder.element("ItData", attributes: {"xmlns": ""}, nest: () {
+                if (list != null) {
+                  list.map((item) {
+                    return builder.element("item", nest: () {
+                      builder.element("Aufnr", nest: AUFNR);
+                      builder.element("Pernr1", nest: item.PERNR);
+                    });
+                  }).toList();
+                }
+              });
+            });
           });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -1050,20 +1204,20 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmOrderConfirm", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IData", attributes: {"xmlns": ""}, nest: () {
-            builder.element("Pernr", nest: PERNR);
-            builder.element("Aufnr", nest: AUFNR);
-            builder.element("Appstatus", nest: APPSTATUS);
-            builder.element("Apptradeno", nest: APPTRADENO);
+          builder.element("Body", nest: () {
+            builder.element("ZpmOrderConfirm", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IData", attributes: {"xmlns": ""}, nest: () {
+                builder.element("Pernr", nest: PERNR);
+                builder.element("Aufnr", nest: AUFNR);
+                builder.element("Appstatus", nest: APPSTATUS);
+                builder.element("Apptradeno", nest: APPTRADENO);
+              });
+              builder.element("ItData", attributes: {"xmlns": ""});
+            });
           });
-          builder.element("ItData", attributes: {"xmlns": ""});
         });
-      });
-    });
     return builder.build();
   }
 
@@ -1085,17 +1239,17 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchBom", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IvEqunr", attributes: {"xmlns": ""}, nest: EQUNR);
-          builder.element("EtMatnr", attributes: {"xmlns": ""});
-          builder.element("EtMatnr2", attributes: {"xmlns": ""});
-          builder.element("EtMatnrRep", attributes: {"xmlns": ""});
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchBom", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IvEqunr", attributes: {"xmlns": ""}, nest: EQUNR);
+              builder.element("EtMatnr", attributes: {"xmlns": ""});
+              builder.element("EtMatnr2", attributes: {"xmlns": ""});
+              builder.element("EtMatnrRep", attributes: {"xmlns": ""});
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -1181,15 +1335,15 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmSearchWcg", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("EtData", attributes: {"xmlns": ""});
-          builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchWcg", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("Pernr", attributes: {"xmlns": ""}, nest: PERNR);
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -1241,19 +1395,19 @@ class XmlUtils {
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
         nest: () {
-      builder.element("Body", nest: () {
-        builder.element("ZpmChangeComponents", attributes: {
-          "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
-        }, nest: () {
-          builder.element("IvAufnr", attributes: {"xmlns": ""}, nest: AUFNR);
-          builder.element("IvMaktx", attributes: {"xmlns": ""}, nest: MAKTX);
-          builder.element("IvMatnr", attributes: {"xmlns": ""}, nest: MATNR);
-          builder.element("IvEqunr", attributes: {"xmlns": ""}, nest: EQUNR);
-          builder.element("IvMenge",
-              attributes: {"xmlns": ""}, nest: MENGE.toString());
+          builder.element("Body", nest: () {
+            builder.element("ZpmChangeComponents", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("IvAufnr", attributes: {"xmlns": ""}, nest: AUFNR);
+              builder.element("IvMaktx", attributes: {"xmlns": ""}, nest: MAKTX);
+              builder.element("IvMatnr", attributes: {"xmlns": ""}, nest: MATNR);
+              builder.element("IvEqunr", attributes: {"xmlns": ""}, nest: EQUNR);
+              builder.element("IvMenge",
+                  attributes: {"xmlns": ""}, nest: MENGE.toString());
+            });
+          });
         });
-      });
-    });
     return builder.build();
   }
 
@@ -1322,6 +1476,38 @@ class XmlUtils {
       order.ERDAT3 = e.findElements("Erdat3").first.text;
       order.ERTIM3 = e.findElements("Ertim3").first.text;
       return order;
+    }).toList();
+    return list;
+  }
+
+  static xml.XmlNode buildMaterialTemp(
+      String AUFNR) {
+    var builder = new xml.XmlBuilder();
+    builder.element("Envelope",
+        attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
+        nest: () {
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchWxrecTemp", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtResb", attributes: {"xmlns": ""});
+              builder.element("Aufnr", attributes: {"xmlns": ""}, nest: AUFNR);
+            });
+          });
+        });
+    return builder.build();
+  }
+
+  static List<SubmitMateriel> readMaterialTemp(String stringXml) {
+    var document = xml.parse(stringXml);
+    List<SubmitMateriel> list = document.findAllElements("item").map((e) {
+      SubmitMateriel submitMateriel = new SubmitMateriel();
+      submitMateriel.AUFNR = e.findElements("Aufnr").first.text;
+      submitMateriel.MAKTX = e.findElements("Maktx").first.text;
+      submitMateriel.MATNR = e.findElements("Matnr").first.text;
+      print(double.parse(e.findElements("Enmng").first.text).floor());
+      submitMateriel.MENGE = double.parse(e.findElements("Enmng").first.text).floor();
+      return submitMateriel;
     }).toList();
     return list;
   }

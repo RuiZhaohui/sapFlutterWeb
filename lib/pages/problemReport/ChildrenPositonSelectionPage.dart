@@ -24,6 +24,7 @@ class _ChildrenPositionSelectionPageState extends State<ChildrenPositionSelectio
   Device _selectItem;
 
   List<Widget> createWidgetList(List<FunctionPosition> list) {
+
     List<Widget> itemList = [];
     if (list.length == 0) {
       return itemList;
@@ -31,7 +32,7 @@ class _ChildrenPositionSelectionPageState extends State<ChildrenPositionSelectio
     for (int i = 0; i < list.length; i++) {
       if (i == 0) {
         itemList.add(new ListItemWidget(
-              title: Text(list[i].positionName),
+          title: Text(list[i].positionName),
           onTap: () {
             if (list[i].children.length > 0) {
               Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
@@ -60,7 +61,7 @@ class _ChildrenPositionSelectionPageState extends State<ChildrenPositionSelectio
           height: 1,
         ));
         itemList.add(new ListItemWidget(
-              title: Text(list[i].positionName),
+          title: Text(list[i].positionName),
           onTap: () {
             if (list[i].children.length > 0) {
               Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
@@ -93,22 +94,46 @@ class _ChildrenPositionSelectionPageState extends State<ChildrenPositionSelectio
   void initState() {
     this._selectItem = widget.selectItem;
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      FunctionPosition position = widget.position.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
+      if (position.children.length > 0) {
+        Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+          return ChildrenPositionSelectionPage(position: position.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+        })).then((val) {
+          if (val["isOk"]) {
+            this._selectItem = val["item"];
+            Navigator.of(context).pop(val);
+          }
+        });
+      } else if (position.deviceChildren.length > 0) {
+
+        Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+          return ChildrenDeviceSelectionPage(device: position.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+        })).then((val) {
+          if (val["isOk"]) {
+            this._selectItem = val["item"];
+            Navigator.of(context).pop(val);
+          }
+        });
+      }
+    });
   }
+
 
   @override
   Widget build(BuildContext context) {
     return new CupertinoPageScaffold(
-        navigationBar: new CupertinoNavigationBar(
-          leading: CupertinoNavigationBarBackButton(
-            onPressed: () => Navigator.pop(context, {"item": widget.selectItem, "isOk": false}),
-            color: Color.fromRGBO(94, 102, 111, 1),
-          ),
-          middle: Text(
-            /// todo 改为父位置名称
-            "选择设备",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
+      navigationBar: new CupertinoNavigationBar(
+        leading: CupertinoNavigationBarBackButton(
+          onPressed: () => Navigator.pop(context, {"item": widget.selectItem, "isOk": false}),
+          color: Color.fromRGBO(94, 102, 111, 1),
         ),
+        middle: Text(
+          /// todo 改为父位置名称
+          "选择设备",
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+      ),
       child: SafeArea(
           child: CupertinoScrollbar(
               child: ListView(

@@ -114,16 +114,16 @@ class _RepairOrderDetailPageState extends State<RepairOrderDetailPage> {
                           });
                           Navigator.of(context)
                               .push(new CupertinoPageRoute(
-                                  builder: (context) => new ViewDialog(
-                                        img: {'key': i > position ? i-1 : i, 'videoFile': list[i]},
-                                        imgs: imgs,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        controller: this._controller,
-                                        initializeVideoPlayerFuture:
-                                            this._initializeVideoPlayerFuture,
-                                        onlyView: true,
-                                      )))
+                              builder: (context) => new ViewDialog(
+                                img: {'key': i > position ? i-1 : i, 'videoFile': list[i]},
+                                imgs: imgs,
+                                width:
+                                MediaQuery.of(context).size.width,
+                                controller: this._controller,
+                                initializeVideoPlayerFuture:
+                                this._initializeVideoPlayerFuture,
+                                onlyView: true,
+                              )))
                               .then((index) {
                             if (this._controller != null) {
                               this._controller.pause();
@@ -196,15 +196,15 @@ class _RepairOrderDetailPageState extends State<RepairOrderDetailPage> {
             });
             Navigator.of(context)
                 .push(new CupertinoPageRoute(
-                    builder: (context) => new ViewDialog(
-                          img: {'key': i > position ? i-1 : i, 'url': list[i]},
-                          imgs: imgs,
-                          width: MediaQuery.of(context).size.width,
-                          controller: this._controller,
-                          initializeVideoPlayerFuture:
-                              this._initializeVideoPlayerFuture,
-                          onlyView: true,
-                        )))
+                builder: (context) => new ViewDialog(
+                  img: {'key': i > position ? i-1 : i, 'url': list[i]},
+                  imgs: imgs,
+                  width: MediaQuery.of(context).size.width,
+                  controller: this._controller,
+                  initializeVideoPlayerFuture:
+                  this._initializeVideoPlayerFuture,
+                  onlyView: true,
+                )))
                 .then((index) {
               if (this._controller != null) {
                 this._controller.pause();

@@ -2,11 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TextareaWidget extends StatefulWidget {
-  TextareaWidget({Key key, @required this.textEditingController, this.placeholder, this.lines}) : super(key: key);
+  TextareaWidget({Key key, @required this.textEditingController, this.placeholder, this.lines, this.type = TextInputType.text}) : super(key: key);
 
   final TextEditingController textEditingController;
   final String placeholder;
   final int lines;
+  final TextInputType type;
 
   @override
   State createState() {
@@ -28,7 +29,7 @@ class _TextareaWidgetState extends State<TextareaWidget> {
               maxLines: widget.lines,
               autofocus: false,
               controller: widget.textEditingController,
-              keyboardType: TextInputType.text,
+              keyboardType: widget.type,
               obscureText: false,
               showCursor: true,
               cursorColor: Color.fromRGBO(51, 115, 178, 1),

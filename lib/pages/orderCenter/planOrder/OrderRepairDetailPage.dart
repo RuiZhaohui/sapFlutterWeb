@@ -12,12 +12,12 @@ import 'package:gztyre/components/ButtonBarWidget.dart';
 import 'package:gztyre/components/ButtonWidget.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
-import 'package:gztyre/components/TextareaWithPicAndVideoForWebWidget.dart';
 import 'package:gztyre/components/TextareaWithPicAndVideoWidget.dart';
 import 'package:gztyre/pages/problemReport/DeviceSelectionPage.dart';
 import 'package:gztyre/pages/problemReport/ProblemDescriptionPage.dart';
 import 'package:gztyre/pages/repairOrder/OtherDevicePage.dart';
 import 'package:gztyre/utils/ListController.dart';
+import 'package:gztyre/utils/StringUtils.dart';
 
 class OrderRepairDetailPage extends StatefulWidget {
   OrderRepairDetailPage({Key key, this.order}) : super(key: key);
@@ -41,7 +41,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
 
   _buildTextareaWithPicAndVideoWidget() {
     print({'this.list': this._list.value});
-    return TextareaWithPicAndVideoForWebWidget(
+    return TextareaWithPicAndVideoWidget(
       listController: this._list,
       rootContext: context,
       textEditingController: this._description,
@@ -50,7 +50,11 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
     );
   }
 
-  Future<String> _getAPPTRADENO(String sapNo) async {
+  Future<String> _getAPPTRADENO(String QMNUM, String AUFNR) async {
+    String sapNo;
+    if (StringUtils.isBank(QMNUM)) {
+      sapNo = AUFNR;
+    } else sapNo = QMNUM;
     return await HttpRequestRest.getMalfunction(sapNo, (Map map) async {
       return map['tradeNo'];
     }, (err) async {
@@ -76,7 +80,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM).then((APPTRADENO) async {
+    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
           order.QMNUM,
@@ -103,8 +107,34 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
     });
   }
 
+  Future<bool> _complete(
+      Order order, String PERNR) async {
+    setState(() {
+      this._loading = true;
+    });
+    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+      return await HttpRequest.completeOrder(
+          PERNR, order.AUFNR, "已确认", APPTRADENO, (res) {
+        setState(() {
+          this._loading = false;
+        });
+        return true;
+      }, (err) {
+        setState(() {
+          this._loading = false;
+        });
+        return false;
+      });
+    }).catchError((err) {
+      setState(() {
+        this._loading = false;
+      });
+      return false;
+    });
+  }
+
   Future<List<dynamic>> _uploadFile(ListController list) async {
-    return await HttpRequestRest.uploadForWeb(
+    return await HttpRequestRest.upload(
         list.value.map((item) {
           return item;
         }).toList(), (res) {
@@ -367,7 +397,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                             List<String> pictures = new List();
                             String audio = '';
                             this
-                                ._getAPPTRADENO(widget.order.QMNUM)
+                                ._getAPPTRADENO(widget.order.QMNUM, widget.order.AUFNR)
                                 .catchError((err) {
                               setState(() {
                                 this._loading = false;
@@ -436,39 +466,103 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                               this._description.text)
                                           .then((success) async {
                                         if (success) {
-                                          setState(() {
-                                            this._loading = false;
-                                          });
-                                          await HttpRequestRest.pushAlias(
-                                              [widget.order.PERNR],
-                                              "",
-                                              "",
-                                              "${Global.userInfo.ENAME}维修完成",
-                                              [],
-                                              (success) {},
-                                              (err) {});
-                                          showCupertinoDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return CupertinoAlertDialog(
-                                                  content: Text(
-                                                    "维修完成",
-                                                    style:
-                                                        TextStyle(fontSize: 18),
-                                                  ),
-                                                  actions: <Widget>[
-                                                    CupertinoDialogAction(
-                                                      onPressed: () {
-                                                        Navigator.of(context)
-                                                            .popUntil(ModalRoute
-                                                                .withName(
-                                                                    "repairList"));
-                                                      },
-                                                      child: Text("好"),
+                                          if (widget.order.ILART == "N06" || widget.order.ILART == "N10") {
+                                            await this._complete(widget.order, Global.userInfo.PERNR).then((success) async {
+                                              if (success) {
+                                                setState(() {
+                                                  this._loading = false;
+                                                });
+                                                await HttpRequestRest.pushAlias(
+                                                    [widget.order.PERNR],
+                                                    "",
+                                                    "",
+                                                    "${Global.userInfo.ENAME}维修完成",
+                                                    [],
+                                                        (success) {},
+                                                        (err) {});
+                                                showCupertinoDialog(
+                                                    context: context,
+                                                    builder: (BuildContext context) {
+                                                      return CupertinoAlertDialog(
+                                                        content: Text(
+                                                          "维修完成",
+                                                          style:
+                                                          TextStyle(fontSize: 18),
+                                                        ),
+                                                        actions: <Widget>[
+                                                          CupertinoDialogAction(
+                                                            onPressed: () {
+                                                              Navigator.of(context)
+                                                                  .popUntil(ModalRoute
+                                                                  .withName(
+                                                                  "planOrderHome"));
+                                                            },
+                                                            child: Text("好"),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    });
+                                              } else {
+                                                setState(() {
+                                                  this._loading = false;
+                                                });
+                                                showCupertinoDialog(
+                                                    context: context,
+                                                    builder: (BuildContext context) {
+                                                      return CupertinoAlertDialog(
+                                                        content: Text(
+                                                          "维修已完成，但未确认，请手动确定",
+                                                          style:
+                                                          TextStyle(fontSize: 18),
+                                                        ),
+                                                        actions: <Widget>[
+                                                          CupertinoDialogAction(
+                                                            onPressed: () {
+                                                              Navigator.of(context)
+                                                                  .pop();
+                                                            },
+                                                            child: Text("好"),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    });
+                                              }
+                                            });
+                                          } else {
+                                            setState(() {
+                                              this._loading = false;
+                                            });
+                                            await HttpRequestRest.pushAlias(
+                                                [widget.order.PERNR],
+                                                "",
+                                                "",
+                                                "${Global.userInfo.ENAME}维修完成",
+                                                [],
+                                                    (success) {},
+                                                    (err) {});
+                                            showCupertinoDialog(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return CupertinoAlertDialog(
+                                                    content: Text(
+                                                      "维修完成",
+                                                      style:
+                                                      TextStyle(fontSize: 18),
                                                     ),
-                                                  ],
-                                                );
-                                              });
+                                                    actions: <Widget>[
+                                                      CupertinoDialogAction(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .popUntil(ModalRoute
+                                                              .withName(
+                                                              "planOrderHome"));
+                                                        },
+                                                        child: Text("好"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
+                                          }
                                         } else {
                                           setState(() {
                                             this._loading = false;
@@ -530,36 +624,103 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                           this._description.text)
                                       .then((success) async {
                                     if (success) {
-                                      this._loading = false;
-                                      await HttpRequestRest.pushAlias(
-                                          [widget.order.PERNR],
-                                          "",
-                                          "",
-                                          "${Global.userInfo.ENAME}维修完成",
-                                          [],
-                                          (success) {},
-                                          (err) {});
-                                      showCupertinoDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return CupertinoAlertDialog(
-                                              content: Text(
-                                                "维修完成",
-                                                style: TextStyle(fontSize: 18),
-                                              ),
-                                              actions: <Widget>[
-                                                CupertinoDialogAction(
-                                                  onPressed: () {
-                                                    Navigator.of(context)
-                                                        .popUntil(
-                                                            ModalRoute.withName(
-                                                                "repairList"));
-                                                  },
-                                                  child: Text("好"),
+                                      if (widget.order.ILART == "N06" || widget.order.ILART == "N10") {
+                                        await this._complete(widget.order, Global.userInfo.PERNR).then((success) async {
+                                          if (success) {
+                                            await HttpRequestRest.pushAlias(
+                                                [widget.order.PERNR],
+                                                "",
+                                                "",
+                                                "${Global.userInfo.ENAME}维修完成",
+                                                [],
+                                                    (success) {},
+                                                    (err) {});
+                                            setState(() {
+                                              this._loading = false;
+                                            });
+                                            showCupertinoDialog(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return CupertinoAlertDialog(
+                                                    content: Text(
+                                                      "维修完成",
+                                                      style:
+                                                      TextStyle(fontSize: 18),
+                                                    ),
+                                                    actions: <Widget>[
+                                                      CupertinoDialogAction(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .popUntil(ModalRoute
+                                                              .withName(
+                                                              "planOrderHome"));
+                                                        },
+                                                        child: Text("好"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
+                                          } else {
+                                            setState(() {
+                                              this._loading = false;
+                                            });
+                                            showCupertinoDialog(
+                                                context: context,
+                                                builder: (BuildContext context) {
+                                                  return CupertinoAlertDialog(
+                                                    content: Text(
+                                                      "维修已完成，但未确认，请手动确定",
+                                                      style:
+                                                      TextStyle(fontSize: 18),
+                                                    ),
+                                                    actions: <Widget>[
+                                                      CupertinoDialogAction(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: Text("好"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                });
+                                          }
+                                        });
+                                      } else {
+                                        await HttpRequestRest.pushAlias(
+                                            [widget.order.PERNR],
+                                            "",
+                                            "",
+                                            "${Global.userInfo.ENAME}维修完成",
+                                            [],
+                                                (success) {},
+                                                (err) {});
+                                        setState(() {
+                                          this._loading = false;
+                                        });
+                                        showCupertinoDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return CupertinoAlertDialog(
+                                                content: Text(
+                                                  "维修完成",
+                                                  style:
+                                                  TextStyle(fontSize: 18),
                                                 ),
-                                              ],
-                                            );
-                                          });
+                                                actions: <Widget>[
+                                                  CupertinoDialogAction(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .popUntil(ModalRoute
+                                                          .withName(
+                                                          "planOrderHome"));
+                                                    },
+                                                    child: Text("好"),
+                                                  ),
+                                                ],
+                                              );
+                                            });
+                                      }
                                     } else {
                                       setState(() {
                                         this._loading = false;

@@ -38,7 +38,9 @@ class _OrderListPageState extends State<OrderListPage> {
   bool _isRepairing = false;
 
   _listHistoryOrder() async {
-    this._loading = true;
+    setState(() {
+      this._loading = true;
+    });
     this._list = [];
     return await HttpRequest.historyOrder(this._userInfo.PERNR, this._userInfo.WCTYPE == "是" ? "X" : "", (List<Order> list) {
       this._list = list;
@@ -56,15 +58,15 @@ class _OrderListPageState extends State<OrderListPage> {
   }
 
   _listOrder(bool isManager) async {
-    this._loading = true;
+    setState(() {
+      this._loading = true;
+    });
     this._list = [];
     return await HttpRequest.listBlockOrder(
         this._userInfo.PERNR, this._userInfo.CPLGR, this._userInfo.MATYP, this._userInfo.SORTB, "X", null, "ZPM4", Global.maintenanceGroup, (List<Order> list) {
       this._isRepairing = false;
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
-            (item.PERNR1 == _userInfo.PERNR ) &&
+        if ((item.PERNR1 == _userInfo.PERNR ) &&
             (item.APPSTATUS == "接单" || item.APPSTATUS == "转单" || (item.APPSTATUS == "呼叫协助") || (item.APPSTATUS == "加入"))) {
           this._isRepairing = true;
         }
@@ -72,43 +74,32 @@ class _OrderListPageState extends State<OrderListPage> {
 
       if (widget.title == "新工单") {
         list.forEach((item) {
-          if (item.QMNUM != null &&
-              item.QMNUM != '' &&
-              (item.APPSTATUS == "" || item.ASTTX == "新建" || item.ASTTX == "新工单")) {
+          if ((item.APPSTATUS == "" || item.ASTTX == "新建" || item.ASTTX == "新工单")) {
             this._list.add(item);
           }
         });
       } else if (widget.title == "转卡单") {
         list.forEach((item) {
-          if (item.QMNUM != null &&
-              item.QMNUM != '' &&
-              item.APPSTATUS == "转卡") {
+          if (item.APPSTATUS == "转卡") {
             this._list.add(item);
           }
         });
       } else if (widget.title == "维修中") {
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
-            (isManager ? true : item.PERNR1 == _userInfo.PERNR ) && item.ASTTX == "维修中" &&
+        if (item.ASTTX == "维修中" &&
             (item.APPSTATUS == "接单" || item.APPSTATUS == "转单" || item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
           this._list.add(item);
         }
       });
       } else if (widget.title == "等待中") {
         list.forEach((item) {
-          if (item.QMNUM != null &&
-              item.QMNUM != '' &&
-              (item.APPSTATUS == "等待" &&  (isManager ? true : item.PERNR1 == _userInfo.PERNR )  || item.APPSTATUS == "再维修" || item.APPSTATUS == "派单")) {
+          if ((item.APPSTATUS == "等待" || item.APPSTATUS == "再维修" || item.APPSTATUS == "派单")) {
             this._list.add(item);
           }
         });
       } else if (widget.title == "协助单") {
         list.forEach((item) {
-          if (item.QMNUM != null &&
-              item.QMNUM != '' &&
-              (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入") &&
-              item.PERNR1 != _userInfo.PERNR) {
+          if ((item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
             this._list.add(item);
           }
         });
@@ -177,7 +168,9 @@ class _OrderListPageState extends State<OrderListPage> {
                             childrenDelegate: SliverChildBuilderDelegate(
                               (BuildContext context, int index) {
                                 return new OrderCardLiteWidget(
-                                  color: this._list[index].COLORS,
+                                  color: (this._list[index].PERNR1 != _userInfo.PERNR &&
+                                      _managerList.contains(_userInfo.SORTB)) ? "X" : this._list[index].COLORS,
+                                  description: this._list[index].QMTXT ?? '',
                                   title: this._list[index].QMTXT ?? '',
                                   level: (this._list[index].COLORS == null || this._list[index].COLORS == "") ? "" :"${this._levelMap[this._list[index].COLORS]}级",
                                   status: this._list[index].ASTTX ?? '',

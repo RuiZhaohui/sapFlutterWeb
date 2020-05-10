@@ -47,7 +47,7 @@ class _RepairTypePageState extends State<RepairTypePage> {
       this._loading = true;
     });
     HttpRequest.listRepairType((List<RepairType> list) {
-      if (Global.userInfo.WCTYPE == "X") {
+      if (Global.userInfo.WCTYPE == "是") {
         this._repairType = list.where((item) {
           return repairPosition.contains(item.ILART);
         }).toList();
@@ -152,11 +152,11 @@ class _RepairTypePageState extends State<RepairTypePage> {
                   child: SafeArea(
                       child: CupertinoScrollbar(
                           child: ListView(
-                    children: <Widget>[
+                            children: <Widget>[
 //                  SearchBar(controller: this._shiftController),
-                      ...createWidgetList(_repairType),
-                    ],
-                  ))),
+                              ...createWidgetList(_repairType),
+                            ],
+                          ))),
                 ),
               );
             }),

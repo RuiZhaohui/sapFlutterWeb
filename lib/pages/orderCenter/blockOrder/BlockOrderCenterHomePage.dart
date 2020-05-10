@@ -39,8 +39,9 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("新工单", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
+        if (
+//        item.QMNUM != null &&
+//            item.QMNUM != '' &&
             (item.APPSTATUS == "" ||
                 item.ASTTX == "新建" ||
                 item.ASTTX == "新工单")) {
@@ -52,7 +53,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("转卡单", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if (item.QMNUM != null && item.QMNUM != '' && item.APPSTATUS == "转卡") {
+        if (item.APPSTATUS == "转卡") {
           resList.add(item);
         }
       });
@@ -61,9 +62,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("维修中", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
-            (isManager ? true : item.PERNR1 == _userInfo.PERNR) && item.ASTTX == "维修中" &&
+        if (item.ASTTX == "维修中" &&
             (item.APPSTATUS == "接单" ||
                 item.APPSTATUS == "转单" ||
                 (item.APPSTATUS == "呼叫协助") ||
@@ -76,10 +75,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("等待中", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
-            (item.APPSTATUS == "等待" &&
-                    (isManager ? true : item.PERNR1 == _userInfo.PERNR) ||
+        if ((item.APPSTATUS == "等待" ||
                 item.APPSTATUS == "再维修" ||
                 item.APPSTATUS == "派单")) {
           resList.add(item);
@@ -90,10 +86,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("协助单", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if (item.QMNUM != null &&
-            item.QMNUM != '' &&
-            (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入") &&
-            item.PERNR1 != _userInfo.PERNR) {
+        if ((item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
           resList.add(item);
         }
       });
@@ -108,7 +101,9 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
   }
 
   Future<int> _countHistoryOrder() async {
-    this._loading = true;
+    setState(() {
+      this._loading = true;
+    });
     return await HttpRequest.historyOrder(this._userInfo.PERNR, this._userInfo.WCTYPE == "是" ? "X" : "", (List<Order> list) {
       print(list);
       return list.length;
@@ -119,7 +114,9 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
   }
 
   _listOrder() async {
-    this._loading = true;
+    setState(() {
+      this._loading = true;
+    });
     this._list = [];
     if (this._userInfo.WCTYPE == "是") {
       return await HttpRequest.listBlockOrder(this._userInfo.PERNR, null, null, null,
