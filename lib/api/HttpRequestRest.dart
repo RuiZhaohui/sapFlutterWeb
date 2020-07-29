@@ -3,13 +3,14 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:gztyre/api/model/FunctionPosition.dart';
+import 'package:gztyre/api/model/Materiel.dart';
 import 'package:gztyre/commen/Global.dart';
 import 'dart:html' as html;
 
 class HttpRequestRest {
 
-//  static String _baseUrl = "http://pmapp.gztyre.com:8080"; // 生产
-  static String _baseUrl = "http://192.168.6.211:8070"; // 开发
+  static String _baseUrl = "http://pmapp.gztyre.com:8080"; // 生产
+//  static String _baseUrl = "http://192.168.6.211:8070"; // 开发
 
   static Dio getHttp() {
     Dio http = new Dio(BaseOptions(
@@ -32,29 +33,6 @@ class HttpRequestRest {
     }));
     return http;
   }
-
-//  static Dio getFileHttp() {
-//    Dio http = new Dio(BaseOptions(
-////        baseUrl: "http://pmapp.gztyre.com:8080", // 生产
-//      baseUrl: "http://192.168.6.211:8070", // 开发
-//        connectTimeout: 30000));
-//    http.interceptors.add(InterceptorsWrapper(onRequest: (RequestOptions options) {
-//      if (Global.token != null) {
-//        options.headers.addEntries([
-//          MapEntry("Authorization", "Bearer ${Global.token}")
-//        ]);
-//      }
-//      // Do something before request is sent
-//      return options; //continue
-//    }, onResponse: (Response response) {
-//      // Do something with response data
-//      return response; // continue
-//    }, onError: (DioError e) {
-//      // Do something with response error
-//      return e; //continue
-//    }));
-//    return http;
-//  }
 
   static upload(List<dynamic> fileList, Function(List list) onSuccess,
       Function(DioError err) onError) async {
@@ -83,10 +61,6 @@ class HttpRequestRest {
     header.putIfAbsent("Authorization", () => "Bearer ${Global.token}");
     for (int i = 0; i < fileList.length; i++) {
       formData.appendBlob("files", fileList[i].file, Global.userInfo.PERNR + "-" + DateTime.now().toString() + "." + fileList[i].file.name.split('.').last);
-//      formData.files
-//          .add(MapEntry("files", MultipartFile.fromFileSync(fileList[i],
-//          filename: Global.userInfo.PERNR + "-" + DateTime.now().toString() + "." + fileList[i].split('.').last
-//      )));
     }
       return await html.HttpRequest.request(
           "${_baseUrl}/api/uploadMultipleFiles",
@@ -327,6 +301,19 @@ class HttpRequestRest {
       Response response = await getHttp().get("/api/sap/materials/${code}");
       print(response.data);
       return await onSuccess(response.data['data']);
+    } on DioError catch (e) {
+      return await onError(e);
+    }
+  }
+
+  static getMateriel(String code, Function(Materiel materiel) onSuccess,
+      Function(DioError err) onError) async {
+    try {
+      Response response = await getHttp().get("/api/sap/materials/${code}");
+      print(response.data);
+      if (response.data['data'] == null) {
+        return onSuccess(null);
+      } else return await onSuccess(Materiel.formJson(response.data['data']));
     } on DioError catch (e) {
       return await onError(e);
     }

@@ -12,11 +12,7 @@ import 'package:gztyre/pages/orderCenter/blockOrder/OrderListPage.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class BlockOrderCenterHomePage extends StatefulWidget {
-  BlockOrderCenterHomePage({Key key, @required this.rootContext})
-      : assert(rootContext != null),
-        super(key: key);
-
-  final BuildContext rootContext;
+  BlockOrderCenterHomePage({Key key}) :super(key: key);
 
   @override
   State createState() => _BlockOrderCenterHomePageState();
@@ -42,9 +38,9 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
         if (
 //        item.QMNUM != null &&
 //            item.QMNUM != '' &&
-            (item.APPSTATUS == "" ||
-                item.ASTTX == "新建" ||
-                item.ASTTX == "新工单")) {
+        (item.APPSTATUS == "" ||
+            item.ASTTX == "新建" ||
+            item.ASTTX == "新工单")) {
           resList.add(item);
         }
       });
@@ -66,7 +62,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
             (item.APPSTATUS == "接单" ||
                 item.APPSTATUS == "转单" ||
                 (item.APPSTATUS == "呼叫协助") ||
-                (item.APPSTATUS == "加入"))) {
+                (item.APPSTATUS == "加入")) && ((isManager && item.ILART != "N06") || item.PERNR1 == _userInfo.PERNR)) {
           resList.add(item);
         }
       });
@@ -76,8 +72,8 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
       List<Order> resList = new List();
       list.forEach((item) {
         if ((item.APPSTATUS == "等待" ||
-                item.APPSTATUS == "再维修" ||
-                item.APPSTATUS == "派单")) {
+            item.APPSTATUS == "再维修" ||
+            item.APPSTATUS == "派单")) {
           resList.add(item);
         }
       });
@@ -86,7 +82,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     map.putIfAbsent("协助单", () {
       List<Order> resList = new List();
       list.forEach((item) {
-        if ((item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
+        if ((item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入") && item.PERNR1 != _userInfo.PERNR) {
           resList.add(item);
         }
       });
@@ -106,7 +102,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
     });
     return await HttpRequest.historyOrder(this._userInfo.PERNR, this._userInfo.WCTYPE == "是" ? "X" : "", (List<Order> list) {
       print(list);
-      return list.length;
+      return list.where((element) => element.ILART == "N08").toList().length;
     }, (err) {
       print(err);
       return 0;
@@ -122,8 +118,8 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
       return await HttpRequest.listBlockOrder(this._userInfo.PERNR, null, null, null,
           "X", null, "ZPM4", Global.maintenanceGroup, (List<Order> list) async {
             list.forEach((item) {
-              if (item.QMNUM != null &&
-                  item.QMNUM != '') {
+              if (item.QMNUM == null ||
+                  item.QMNUM == '') {
                 this._list.add(item);
               }
             });
@@ -187,7 +183,7 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                 color: Color.fromRGBO(94, 102, 111, 1),
               ),
               middle:
-                  Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
+              Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
             ),
             child: SafeArea(
               child: Column(
@@ -226,10 +222,10 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "新工单",
@@ -242,15 +238,15 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["新工单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["新工单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red)
+                                        child: Text(
+                                          this
+                                              ._countMap["新工单"]
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        ),
+                                        color: Colors.red)
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -283,10 +279,10 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "转卡单",
@@ -299,16 +295,16 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["转卡单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["转卡单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["转卡单"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -341,32 +337,32 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "维修中",
                                             );
                                           })).then((val) {
-                                            this._listOrder();
+                                    this._listOrder();
                                   });
                                 },
                                 actionArea: Row(
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["维修中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["维修中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["维修中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -399,10 +395,10 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "等待中",
@@ -415,16 +411,16 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["等待中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["等待中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["等待中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -457,10 +453,10 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "协助单",
@@ -515,10 +511,10 @@ class _BlockOrderCenterHomePageState extends State<BlockOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "历史单",

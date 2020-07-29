@@ -89,36 +89,51 @@ class _ChildrenPositionSelectionPageState extends State<ChildrenPositionSelectio
     return itemList;
   }
 
+  _autoChangePage(List<FunctionPosition> positionList) {
+    FunctionPosition position;
+    try {
+      position = positionList.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
+    } catch (e) {
+      return;
+    }
+    if (position.children.length > 0) {
+      Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+        return ChildrenPositionSelectionPage(position: position.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+      })).then((val) {
+        if (val["isOk"]) {
+          this._selectItem = val["item"];
+          Navigator.of(context).pop(val);
+        }
+      });
+    } else if (position.deviceChildren.length > 0) {
+
+      Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+        return ChildrenDeviceSelectionPage(device: position.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+      })).then((val) {
+        if (val["isOk"]) {
+          this._selectItem = val["item"];
+          Navigator.of(context).pop(val);
+        }
+      });
+    }
+  }
+
 
   @override
   void initState() {
     this._selectItem = widget.selectItem;
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      FunctionPosition position = widget.position.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
-      if (position.children.length > 0) {
-        Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
-          return ChildrenPositionSelectionPage(position: position.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
-        })).then((val) {
-          if (val["isOk"]) {
-            this._selectItem = val["item"];
-            Navigator.of(context).pop(val);
-          }
-        });
-      } else if (position.deviceChildren.length > 0) {
-
-        Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
-          return ChildrenDeviceSelectionPage(device: position.deviceChildren, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
-        })).then((val) {
-          if (val["isOk"]) {
-            this._selectItem = val["item"];
-            Navigator.of(context).pop(val);
-          }
-        });
-      }
+      _autoChangePage(widget.position);
     });
   }
 
+
+//  @override
+//  void didChangeDependencies() {
+//
+//    _autoChangePage(widget.position);
+//  }
 
   @override
   Widget build(BuildContext context) {

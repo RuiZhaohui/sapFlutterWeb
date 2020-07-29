@@ -16,9 +16,9 @@ import 'package:gztyre/utils/screen_utils.dart';
 class MaterielPage extends StatefulWidget {
   MaterielPage(
       {Key key,
-      @required this.device,
-      @required this.AUFNR,
-      @required this.list})
+        @required this.device,
+        @required this.AUFNR,
+        @required this.list})
       : super(key: key);
   final Device device;
   final String AUFNR;
@@ -35,13 +35,22 @@ class _MaterielPageState extends State<MaterielPage> {
   List<SubmitMateriel> _requireMaterielList = new List();
   TextEditingController _editMaterielController = new TextEditingController();
   TextEditingController _editSearchMaterielController =
-      new TextEditingController();
+  new TextEditingController();
+  Materiel _searchMaterial;
 
   Future<bool> _isMaterielExist(String code) async {
     return await HttpRequestRest.isMaterielExist(code, (success) {
       return success;
     }, (err) {
       return false;
+    });
+  }
+
+  Future<Materiel> _getMateriel(String code) async {
+    return await HttpRequestRest.getMateriel(code, (materiel) {
+      return materiel;
+    }, (err) {
+      return null;
     });
   }
 
@@ -101,7 +110,11 @@ class _MaterielPageState extends State<MaterielPage> {
     }
     for (int i = 0; i < list.length; i++) {
       Widget listItem = ListItemShopChartWidget(
-        title: Text(list[i].MAKTX != "" ? list[i].MAKTX : list[i].MATNR),
+        title: ListView(
+          children: [
+            Text(list[i].MAKTX != "" ? list[i].MAKTX : list[i].MATNR)
+          ],
+        ),
         number: list[i].MENGE,
         onTap: (val) {
           list[i].MENGE = val;
@@ -146,14 +159,16 @@ class _MaterielPageState extends State<MaterielPage> {
     return Future.forEach(list, (item) async {
       await HttpRequest.addMateriel(item.AUFNR, item.MATNR, item.MAKTX,
           item.MENGE, widget.device.deviceCode, (res) {}, (err) {
-        throw Error();
-      });
+            throw err;
+          });
     });
   }
 
   @override
   void initState() {
+
     super.initState();
+
     if (widget.list != null) {
       this._requireMaterielList = widget.list;
     }
@@ -186,47 +201,67 @@ class _MaterielPageState extends State<MaterielPage> {
                 ),
                 trailing: TextButtonWidget(
                   onTap: () async {
-//                    Navigator.of(context).pop(this._requireMaterielList);
-                    this._addMateriel(this._requireMaterielList).then((val) {
+                    if (this._requireMaterielList.length > 0) {
+                      this._addMateriel(this._requireMaterielList).then((val) {
+                        showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext ctx) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  "添加成功",
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(ctx).pop();
+                                      Navigator.of(context).pop(true);
+                                    },
+                                    child: Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      }).catchError((err) {
+                        showCupertinoDialog(
+                            context: context,
+                            builder: (BuildContext ctx) {
+                              return CupertinoAlertDialog(
+                                content: Text(
+                                  err.message,
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                actions: <Widget>[
+                                  CupertinoDialogAction(
+                                    onPressed: () {
+                                      Navigator.of(ctx).pop();
+                                    },
+                                    child: Text("好"),
+                                  ),
+                                ],
+                              );
+                            });
+                      });
+                    } else {
                       showCupertinoDialog(
                           context: context,
                           builder: (BuildContext ctx) {
                             return CupertinoAlertDialog(
                               content: Text(
-                                "添加成功",
+                                "未添加物料",
                                 style: TextStyle(fontSize: 18),
                               ),
                               actions: <Widget>[
                                 CupertinoDialogAction(
                                   onPressed: () {
                                     Navigator.of(ctx).pop();
-                                    Navigator.of(context).pop(true);
                                   },
                                   child: Text("好"),
                                 ),
                               ],
                             );
                           });
-                    }).catchError((err) {
-                      showCupertinoDialog(
-                          context: context,
-                          builder: (BuildContext ctx) {
-                            return CupertinoAlertDialog(
-                              content: Text(
-                                "操作失败",
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              actions: <Widget>[
-                                CupertinoDialogAction(
-                                  onPressed: () {
-                                    Navigator.of(ctx).pop();
-                                  },
-                                  child: Text("好"),
-                                ),
-                              ],
-                            );
-                          });
-                    });
+                    }
                   },
                   text: "确定",
                 ),
@@ -235,10 +270,10 @@ class _MaterielPageState extends State<MaterielPage> {
                 child: BottomDragWidget(
                   body: CupertinoScrollbar(
                       child: ListView(
-                    children: <Widget>[
-                      ...this._buildList(this._materielList),
-                    ],
-                  )),
+                        children: <Widget>[
+                          ...this._buildList(this._materielList),
+                        ],
+                      )),
                   dragContainer: DragContainer(
                     drawer: Container(
                       child: Column(
@@ -254,7 +289,7 @@ class _MaterielPageState extends State<MaterielPage> {
                                       '没有找到物料？',
                                       style: TextStyle(
                                           color:
-                                              Color.fromRGBO(109, 109, 114, 1),
+                                          Color.fromRGBO(109, 109, 114, 1),
                                           fontSize: 14),
                                       overflow: TextOverflow.fade,
                                     ),
@@ -263,19 +298,25 @@ class _MaterielPageState extends State<MaterielPage> {
                                         '手动添加物料',
                                         style: TextStyle(
                                             color:
-                                                Color.fromRGBO(44, 93, 187, 1),
+                                            Color.fromRGBO(44, 93, 187, 1),
                                             fontSize: 14),
                                         overflow: TextOverflow.fade,
                                       ),
                                       onTap: () {
                                         showCupertinoDialog(
                                             context: context,
-                                            builder: (BuildContext context) {
+                                            builder: (BuildContext dialogCtx) {
                                               return CupertinoAlertDialog(
-                                                content: CupertinoTextField(
-                                                  controller:
+                                                content: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    CupertinoTextField(
+                                                      controller:
                                                       _editSearchMaterielController,
-                                                  placeholder: "请输入物料编码",
+                                                      placeholder: "请输入物料编码",
+                                                    ),
+                                                  ],
                                                 ),
                                                 actions: <Widget>[
                                                   CupertinoDialogAction(
@@ -283,7 +324,7 @@ class _MaterielPageState extends State<MaterielPage> {
                                                       this
                                                           ._editSearchMaterielController
                                                           .text = null;
-                                                      Navigator.of(context)
+                                                      Navigator.of(dialogCtx)
                                                           .pop();
                                                     },
                                                     child: Text("取消"),
@@ -291,8 +332,8 @@ class _MaterielPageState extends State<MaterielPage> {
                                                   CupertinoDialogAction(
                                                     onPressed: () {
                                                       SubmitMateriel
-                                                          submitMateriel =
-                                                          new SubmitMateriel();
+                                                      submitMateriel =
+                                                      new SubmitMateriel();
                                                       submitMateriel.MAKTX = "";
                                                       submitMateriel.MATNR =
                                                           _editSearchMaterielController
@@ -301,34 +342,36 @@ class _MaterielPageState extends State<MaterielPage> {
                                                           widget.AUFNR;
                                                       submitMateriel.MENGE = 0;
                                                       this
-                                                          ._isMaterielExist(
-                                                              submitMateriel
-                                                                  .MATNR)
-                                                          .then((success) {
-                                                        if (success) {
+                                                          ._getMateriel(
+                                                          submitMateriel
+                                                              .MATNR)
+                                                          .then((materiel) {
+                                                        if (materiel != null) {
+                                                          submitMateriel.MAKTX = materiel.MAKTX;
+                                                          submitMateriel.MATNR = materiel.MATNR;
                                                           this
                                                               ._requireMaterielList
                                                               .add(
-                                                                  submitMateriel);
+                                                              submitMateriel);
                                                           this
                                                               ._editSearchMaterielController
                                                               .text = null;
-                                                          Navigator.of(context)
+                                                          Navigator.of(dialogCtx)
                                                               .pop();
                                                         } else {
-                                                          Navigator.of(context)
+                                                          Navigator.of(dialogCtx)
                                                               .pop();
                                                           showCupertinoDialog(
                                                               context: context,
                                                               builder:
                                                                   (BuildContext
-                                                                      ctx) {
+                                                              ctx) {
                                                                 return CupertinoAlertDialog(
                                                                   content: Text(
                                                                     "未找到物料",
                                                                     style: TextStyle(
                                                                         fontSize:
-                                                                            18),
+                                                                        18),
                                                                   ),
                                                                   actions: <
                                                                       Widget>[
@@ -345,6 +388,9 @@ class _MaterielPageState extends State<MaterielPage> {
                                                                 );
                                                               });
                                                         }
+                                                        setState(() {
+
+                                                        });
                                                       });
                                                     },
                                                     child: Text("确定"),
@@ -358,7 +404,7 @@ class _MaterielPageState extends State<MaterielPage> {
                                       '或',
                                       style: TextStyle(
                                           color:
-                                              Color.fromRGBO(109, 109, 114, 1),
+                                          Color.fromRGBO(109, 109, 114, 1),
                                           fontSize: 14),
                                       overflow: TextOverflow.fade,
                                     ),
@@ -367,7 +413,7 @@ class _MaterielPageState extends State<MaterielPage> {
                                         '编辑文本物料',
                                         style: TextStyle(
                                             color:
-                                                Color.fromRGBO(44, 93, 187, 1),
+                                            Color.fromRGBO(44, 93, 187, 1),
                                             fontSize: 14),
                                         overflow: TextOverflow.fade,
                                       ),
@@ -378,7 +424,7 @@ class _MaterielPageState extends State<MaterielPage> {
                                               return CupertinoAlertDialog(
                                                 content: CupertinoTextField(
                                                   controller:
-                                                      _editMaterielController,
+                                                  _editMaterielController,
                                                   placeholder: "请输入物料名称",
                                                 ),
                                                 actions: <Widget>[
@@ -396,8 +442,8 @@ class _MaterielPageState extends State<MaterielPage> {
                                                   CupertinoDialogAction(
                                                     onPressed: () {
                                                       SubmitMateriel
-                                                          submitMateriel =
-                                                          new SubmitMateriel();
+                                                      submitMateriel =
+                                                      new SubmitMateriel();
                                                       submitMateriel.MAKTX = this
                                                           ._editMaterielController
                                                           .text;
@@ -480,5 +526,46 @@ class _MaterielPageState extends State<MaterielPage> {
             ),
           );
         });
+  }
+}
+
+typedef OnChangeCallBack(bool val);
+class DialogContent extends StatefulWidget {
+  DialogContent({Key key, this.materiel, this.onChanged}) : super(key: key);
+  final Materiel materiel;
+  final OnChangeCallBack onChanged;
+
+  @override
+  State createState() => _DialogContentState();
+}
+
+class _DialogContentState extends State<DialogContent> {
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: 1,
+      child: Container(
+        color: Color.fromRGBO(0, 0, 0, 0),
+        child: Padding(
+          padding: EdgeInsets.only(top: 10),
+          child: Text(widget.materiel != null ? widget.materiel.MAKTX : '', style: TextStyle(
+              color: Colors.grey
+          ),),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(DialogContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.materiel != widget.materiel) {
+      widget.onChanged(true);
+    } else {
+      widget.onChanged(false);
+    }
   }
 }

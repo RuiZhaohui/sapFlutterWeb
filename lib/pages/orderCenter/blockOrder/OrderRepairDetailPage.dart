@@ -12,7 +12,7 @@ import 'package:gztyre/components/ButtonBarWidget.dart';
 import 'package:gztyre/components/ButtonWidget.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
-import 'package:gztyre/components/TextareaWithPicAndVideoWidget.dart';
+import 'package:gztyre/components/TextareaWithPicAndVideoForWebWidget.dart';
 import 'package:gztyre/pages/problemReport/DeviceSelectionPage.dart';
 import 'package:gztyre/pages/problemReport/ProblemDescriptionPage.dart';
 import 'package:gztyre/utils/ListController.dart';
@@ -40,7 +40,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
 
   _buildTextareaWithPicAndVideoWidget() {
     print({'this.list': this._list.value});
-    return TextareaWithPicAndVideoWidget(
+    return TextareaWithPicAndVideoForWebWidget(
       listController: this._list,
       rootContext: context,
       textEditingController: this._description,
@@ -58,9 +58,9 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
       return map['tradeNo'];
     }, (err) async {
       this._resetAPPTRANENO(widget.order);
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       throw Error();
     });
   }
@@ -76,9 +76,9 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
   }
 
   Future<bool> _repairComplete(Order order, URGRP, URCOD, EQUNR, KTEXT) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
@@ -93,41 +93,41 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
           null, (res) {
         return true;
       }, (err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
 
   Future<bool> _complete(
       Order order, String PERNR) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.completeOrder(
           PERNR, order.AUFNR, "已确认", APPTRADENO, (res) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return true;
       }, (err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
@@ -228,97 +228,6 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      ListItemWidget(
-                        title: Row(
-                          children: <Widget>[
-                            ImageIcon(
-                              AssetImage('assets/images/icon/icon_device.png'),
-                              color: Color.fromRGBO(250, 175, 30, 1),
-                              size: 16,
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 10),
-                                child: this._device == null
-                                    ? Text("报修对象")
-                                    : Text(
-                                        this._device.deviceName,
-                                        style: TextStyle(
-                                            color: Color.fromRGBO(
-                                          52,
-                                          115,
-                                          178,
-                                          1,
-                                        )),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        actionArea: widget.order.ILART == "N01"
-                            ? Icon(CupertinoIcons.right_chevron, color: Color.fromRGBO(94, 102, 111, 1),)
-                            : Container(),
-                        onTap: () {
-                          if (widget.order.ILART == "N01") {
-                            Navigator.of(context).push(CupertinoPageRoute(
-                                builder: (BuildContext context) {
-                              return DeviceSelectionPage(
-                                selectItem: this._device ?? new Device(),
-                              );
-                            })).then((val) {
-                              if (val["isOk"]) {
-                                this._device = val["item"];
-                                setState(() {});
-                              }
-                            });
-                          }
-                        },
-                      ),
-                      Divider(
-                        height: 1,
-                      ),
-                      ListItemWidget(
-                        title: Row(
-                          children: <Widget>[
-                            ImageIcon(
-                              AssetImage(
-                                  'assets/images/icon/icon_description.png'),
-                              color: Color.fromRGBO(150, 225, 190, 1),
-                              size: 16,
-                            ),
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 10),
-                                child: this._problemDescription == null
-                                    ? Text("维修动作")
-                                    : Text(
-                                        this._selectProblemDescription["text"],
-                                        style: TextStyle(
-                                            color: Color.fromRGBO(
-                                                52, 115, 178, 1)),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                              ),
-                            )
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.of(context).push(CupertinoPageRoute(
-                              builder: (BuildContext context) {
-                            return ProblemDescriptionPage(
-                              type: "5",
-                            );
-                          })).then((value) {
-                            this._problemDescription = value["problemDesc"];
-                            this._selectProblemDescription =
-                                value["selectItem"];
-                            setState(() {});
-                          });
-                        },
-                      ),
                       Padding(
                         padding: EdgeInsets.only(top: 20),
                         child: _buildTextareaWithPicAndVideoWidget(),
@@ -334,19 +243,19 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                         child: Text(
                           '维修完成',
                           style:
-                              TextStyle(color: Color.fromRGBO(76, 129, 235, 1)),
+                          TextStyle(color: Color.fromRGBO(76, 129, 235, 1)),
                         ),
                         color: Color.fromRGBO(76, 129, 235, 1),
                         onPressed: () {
                           if ((this._device == null ||
-                              this._problemDescription == null ||
+//                              this._problemDescription == null ||
                               this._description.text == "") && widget.order.ILART != "N06") {
                             showCupertinoDialog(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return CupertinoAlertDialog(
                                     content: Text(
-                                      "请选择设备与维修动作并填写描述",
+                                      "请填写描述",
                                       style: TextStyle(fontSize: 18),
                                     ),
                                     actions: <Widget>[
@@ -443,7 +352,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                                   this._loading = false;
                                                 });
                                                 await HttpRequestRest.pushAlias(
-                                                    [widget.order.PERNR],
+                                                    [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                     "",
                                                     "",
                                                     "${Global.userInfo.ENAME}维修完成",
@@ -503,7 +412,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                               this._loading = false;
                                             });
                                             await HttpRequestRest.pushAlias(
-                                                [widget.order.PERNR],
+                                                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                 "",
                                                 "",
                                                 "${Global.userInfo.ENAME}维修完成",
@@ -598,7 +507,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                         await this._complete(widget.order, Global.userInfo.PERNR).then((success) async {
                                           if (success) {
                                             await HttpRequestRest.pushAlias(
-                                                [widget.order.PERNR],
+                                                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                 "",
                                                 "",
                                                 "${Global.userInfo.ENAME}维修完成",
@@ -658,7 +567,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                         });
                                       } else {
                                         await HttpRequestRest.pushAlias(
-                                            [widget.order.PERNR],
+                                            [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                             "",
                                             "",
                                             "${Global.userInfo.ENAME}维修完成",

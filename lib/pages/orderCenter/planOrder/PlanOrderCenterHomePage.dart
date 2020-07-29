@@ -8,16 +8,13 @@ import 'package:gztyre/components/Badge.dart';
 import 'package:gztyre/components/DividerBetweenIconListItem.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
+import 'package:gztyre/pages/orderCenter/planOrder/OrderListPage.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'OrderTypeCategoryPage.dart';
 
 class PlanOrderCenterHomePage extends StatefulWidget {
-  PlanOrderCenterHomePage({Key key, @required this.rootContext})
-      : assert(rootContext != null),
-        super(key: key);
-
-  final BuildContext rootContext;
+  PlanOrderCenterHomePage({Key key}):super(key: key);
 
   @override
   State createState() => _PlanOrderCenterHomePageState();
@@ -45,6 +42,10 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
             (item.APPSTATUS == "" ||
                 item.ASTTX == "新建" ||
                 item.ASTTX == "新工单")) {
+//        if (item.QMNUM.contains("10032492")) {
+//          var aaa = item;
+//          print(aaa);
+//        }
           resList.add(item);
         }
       });
@@ -67,7 +68,7 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
             (item.APPSTATUS == "接单" ||
                 item.APPSTATUS == "转单" ||
                 (item.APPSTATUS == "呼叫协助") ||
-                (item.APPSTATUS == "加入"))) {
+                (item.APPSTATUS == "加入")) && ((isManager && item.ILART != "N06") || item.PERNR1 == _userInfo.PERNR)) {
           resList.add(item);
         }
       });
@@ -91,7 +92,7 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
       list.forEach((item) {
         if (item.QMNUM != null &&
             item.QMNUM != '' &&
-            (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
+            (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入") && item.PERNR1 != _userInfo.PERNR) {
           resList.add(item);
         }
       });
@@ -110,8 +111,7 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
       this._loading = true;
     });
     return await HttpRequest.historyOrder(this._userInfo.PERNR, this._userInfo.WCTYPE == "是" ? "X" : "", (List<Order> list) {
-//      print(list);
-      return list.length;
+      return list.where((element) => ["N05", "N06", "N07", "N09", "N10", "N11", "N12", "N19", "N20"].contains(element.ILART)).toList().length;
     }, (err) {
       print(err);
       return 0;
@@ -172,7 +172,7 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
   void initState() {
     this._userInfo = Global.userInfo;
     this._isManager =
-        this._managerList.any((item) => item == this._userInfo.SORTB);
+        this._managerList.contains(_userInfo.SORTB);
     this._listOrderFuture = this._listOrder();
     setState(() {});
     super.initState();
@@ -192,7 +192,7 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                 color: Color.fromRGBO(94, 102, 111, 1),
               ),
               middle:
-                  Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
+              Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
             ),
             child: SafeArea(
               child: Column(
@@ -231,10 +231,10 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderTypeCategoryPage(
                                               title: "新工单",
@@ -247,15 +247,15 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["新工单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["新工单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red)
+                                        child: Text(
+                                          this
+                                              ._countMap["新工单"]
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        ),
+                                        color: Colors.red)
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -288,10 +288,10 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderTypeCategoryPage(
                                               title: "转卡单",
@@ -304,16 +304,16 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["转卡单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["转卡单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["转卡单"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -346,32 +346,32 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderTypeCategoryPage(
                                               title: "维修中",
                                             );
                                           })).then((val) {
-                                            this._listOrder();
+                                    this._listOrder();
                                   });
                                 },
                                 actionArea: Row(
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["维修中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["维修中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["维修中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -404,10 +404,10 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderTypeCategoryPage(
                                               title: "等待中",
@@ -420,16 +420,16 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["等待中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["等待中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["等待中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -462,10 +462,10 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderTypeCategoryPage(
                                               title: "协助单",
@@ -520,12 +520,12 @@ class _PlanOrderCenterHomePageState extends State<PlanOrderCenterHomePage> {
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
-                                            return OrderTypeCategoryPage(
+                                            return OrderListPage(
                                               title: "历史单",
                                             );
                                           })).then((val) {

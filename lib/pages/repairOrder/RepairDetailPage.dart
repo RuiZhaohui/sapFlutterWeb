@@ -330,7 +330,7 @@ class _RepairDetailPageState extends State<RepairDetailPage> {
                         padding: EdgeInsets.only(
                             top: 20, bottom: 20, left: 10, right: 10),
                         child: _buildBomInfo(this._repairOrder).length == 0 ? Text(
-                           "无",
+                          "无",
                           style: TextStyle(fontSize: 14),
                         ) : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

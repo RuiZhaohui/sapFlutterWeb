@@ -29,32 +29,33 @@ class _RepairHistoryPageState extends State<RepairHistoryPage> {
       this._loading = true;
     });
     return await HttpRequest.repairOrderHistory(order.AUFNR,
-        (List<RepairHistory> list) async {
-      this._repairOrderList = list;
-      this.num = list.length;
-      setState(() {
-        this._loading = false;
+            (List<RepairHistory> list) async {
+          this._repairOrderList = list;
+          this.num = list.length;
+          setState(() {
+            this._loading = false;
 //        return true;
-      });
+          });
 //          this._getPic(order);
-    }, (err) {
-      print(err);
-      setState(() {
-        this._loading = false;
+        }, (err) {
+          print(err);
+          setState(() {
+            this._loading = false;
 //        return false;
-      });
-    });
+          });
+        });
   }
 
   List<Widget> _buildList() {
     List<Widget> list = [];
     for (int i = 0; i < num; i++) {
       list.add(Padding(
-        padding: EdgeInsets.only(bottom: 30),
+        padding: EdgeInsets.only(bottom: 15, top: 15),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text("${this._repairOrderList[i].ERDAT.substring(2, 10)} ${this._repairOrderList[i].ERTIM.substring(0, 5)}", textAlign: TextAlign.left,),
+            this._repairOrderList[i].ERDAT == "0000-00-00" ? Container() : Text("${this._repairOrderList[i].ERDAT.substring(2, 10)} ${this._repairOrderList[i].ERTIM.substring(0, 5)}", textAlign: TextAlign.left,),
             this._repairOrderList[i].PERNR != '' ? GestureDetector(
               onTap: () async {
                 Navigator.of(context)
@@ -83,17 +84,19 @@ class _RepairHistoryPageState extends State<RepairHistoryPage> {
                 }));
               },
               child: Text(
-                  this._repairOrderList[i].KTEXT2,
-                  style: TextStyle(color: Color.fromRGBO(36, 98, 204, 1)),
-                ),
+                this._repairOrderList[i].KTEXT2,
+                style: TextStyle(color: Color.fromRGBO(36, 98, 204, 1)),
+              ),
             ) : Container(),
-            this._repairOrderList[i].MAKTX != '' ? Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: Text(
-                '${this._repairOrderList[i].MAKTX} ${this._repairOrderList[i].ENMG}',
+            this._repairOrderList[i].MAKTX != '' ? Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text(
+                  '${this._repairOrderList[i].MAKTX} ${this._repairOrderList[i].ENMG}',
+                ),
               ),
             ) :
-                Container(),
+            Container(),
           ],
         ),
       ));
@@ -111,55 +114,47 @@ class _RepairHistoryPageState extends State<RepairHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: this._repairOrderHistoryFuture,
+        future: this._repairOrderHistoryFuture,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-      return new ProgressDialog(
-          loading: this._loading,
-          child: CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-              leading: CupertinoNavigationBarBackButton(
-                onPressed: () => Navigator.pop(context),
-                color: Color.fromRGBO(94, 102, 111, 1),
-              ),
-              middle: Text(
-                "维修记录",
-                style: TextStyle(fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            child: SafeArea(
-                    child: this._repairOrderList.length > 0 ? ListView(
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: 30,
-                                left: 20,
-                              ),
-                              child: CustomPaint(
-                                size: Size(20, (num * 10 + num * 45).toDouble()),
-                                isComplex: false,
-                                painter: TimeLinePainter(num: num),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(
-                                top: 22,
-                                left: 20,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[..._buildList()],
-                              ),
-                            ),
-                          ],
-                        )
-                      ],
-                ) : Container()),
-          ));
-    });
+          return new ProgressDialog(
+              loading: this._loading,
+              child: CupertinoPageScaffold(
+                navigationBar: CupertinoNavigationBar(
+                  leading: CupertinoNavigationBarBackButton(
+                    onPressed: () => Navigator.pop(context),
+                    color: Color.fromRGBO(94, 102, 111, 1),
+                  ),
+                  middle: Text(
+                    "维修记录",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                child: SafeArea(
+                    child: this._repairOrderList.length > 0 ? Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: ListView(
+//                      children: <Widget>[
+//                        Row(
+//                          crossAxisAlignment: CrossAxisAlignment.start,
+//                          children: <Widget>[
+//                            Padding(
+//                              padding: EdgeInsets.only(
+//                                top: 22,
+//                                left: 20,
+//                              ),
+//                              child: Column(
+//                                crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[..._buildList()],
+//                              ),
+//                            ),
+//                          ],
+//                        )
+//                      ],
+                      ),
+                    ) : Container()),
+              ));
+        });
   }
 }

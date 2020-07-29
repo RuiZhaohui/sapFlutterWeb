@@ -35,9 +35,9 @@ class _HelpPageState extends State<HelpPage> {
       if (i == 0) {
         itemList.add(new GestureDetector(
           child: ListItemSelectWidget(
-              title: Text("${list[i].ENAME}（${list[i].SORTT}）"),
-              item: list[i],
-              selectedItemList: this._selectItemList,),
+            title: Text("${list[i].ENAME}（${list[i].SORTT}）"),
+            item: list[i],
+            selectedItemList: this._selectItemList,),
           onTap: () {
             if (!this._selectItemList.contains(list[i]) && this._selectItemList.length <= 5) {
               this._selectItemList.add(list[i]);
@@ -51,9 +51,9 @@ class _HelpPageState extends State<HelpPage> {
         ));
         itemList.add(new GestureDetector(
           child: ListItemSelectWidget(
-              title: Text("${list[i].ENAME}（${list[i].SORTT}）"),
-              item: list[i],
-              selectedItemList: this._selectItemList,),
+            title: Text("${list[i].ENAME}（${list[i].SORTT}）"),
+            item: list[i],
+            selectedItemList: this._selectItemList,),
           onTap: () {
             if (!this._selectItemList.contains(list[i]) && this._selectItemList.length <= 5) {
               this._selectItemList.add(list[i]);
@@ -72,7 +72,7 @@ class _HelpPageState extends State<HelpPage> {
     });
     return await HttpRequest.searchWorker(Global.userInfo.PERNR, (res) {
       this.allList = res.where((item) {
-        return item.KTEX1 == "闲置" && item.PERNR != Global.userInfo.PERNR;
+        return item.KTEX1 == "闲置" && item.PERNR != Global.userInfo.PERNR && item.CPLGR == Global.userInfo.CPLGR && item.MATYP == Global.userInfo.MATYP;
       }).toList();
       setState(() {
         this._loading = false;
@@ -138,5 +138,4 @@ class _HelpPageState extends State<HelpPage> {
           );});
   }
 }
-
 

@@ -12,7 +12,7 @@ import 'package:gztyre/components/ButtonBarWidget.dart';
 import 'package:gztyre/components/ButtonWidget.dart';
 import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
-import 'package:gztyre/components/TextareaWithPicAndVideoWidget.dart';
+import 'package:gztyre/components/TextareaWithPicAndVideoForWebWidget.dart';
 import 'package:gztyre/pages/problemReport/DeviceSelectionPage.dart';
 import 'package:gztyre/pages/problemReport/ProblemDescriptionPage.dart';
 import 'package:gztyre/pages/repairOrder/OtherDevicePage.dart';
@@ -39,9 +39,12 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
 
   bool _loading = false;
 
+  List<String> _notShowDevice = ["N08"];
+  List<String> _notShowDescription = ["N06", "N08", "N09", "N13"];
+
   _buildTextareaWithPicAndVideoWidget() {
     print({'this.list': this._list.value});
-    return TextareaWithPicAndVideoWidget(
+    return TextareaWithPicAndVideoForWebWidget(
       listController: this._list,
       rootContext: context,
       textEditingController: this._description,
@@ -59,9 +62,9 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
       return map['tradeNo'];
     }, (err) async {
       this._resetAPPTRANENO(widget.order);
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       throw Error();
     });
   }
@@ -77,9 +80,9 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
   }
 
   Future<bool> _repairComplete(Order order, URGRP, URCOD, EQUNR, KTEXT) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
@@ -94,41 +97,41 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
           null, (res) {
         return true;
       }, (err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
 
   Future<bool> _complete(
       Order order, String PERNR) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.completeOrder(
           PERNR, order.AUFNR, "已确认", APPTRADENO, (res) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return true;
       }, (err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
@@ -230,7 +233,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                   child: ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      ListItemWidget(
+                      _notShowDevice.contains(widget.order.ILART) ? Container() : ListItemWidget(
                         title: Row(
                           children: <Widget>[
                             ImageIcon(
@@ -276,10 +279,10 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                           }
                         },
                       ),
-                      widget.order.ILART != "N06" ? Divider(
+                      _notShowDescription.contains(widget.order.ILART) ? Container() :  Divider(
                         height: 1,
-                      ) : Container(),
-                      widget.order.ILART != "N06" ? ListItemWidget(
+                      ),
+                      _notShowDescription.contains(widget.order.ILART) ? Container() :  ListItemWidget(
                         title: Row(
                           children: <Widget>[
                             ImageIcon(
@@ -294,13 +297,13 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                 child: this._problemDescription == null
                                     ? Text("维修动作")
                                     : Text(
-                                        this._selectProblemDescription["text"],
-                                        style: TextStyle(
-                                            color: Color.fromRGBO(
-                                                52, 115, 178, 1)),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                  this._selectProblemDescription["text"],
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(
+                                          52, 115, 178, 1)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             )
                           ],
@@ -308,18 +311,18 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                         onTap: () {
                           Navigator.of(context).push(CupertinoPageRoute(
                               builder: (BuildContext context) {
-                            return ProblemDescriptionPage(
-                              type: "5",
-                            );
-                          })).then((value) {
+                                return ProblemDescriptionPage(
+                                  type: "5",
+                                );
+                              })).then((value) {
                             this._problemDescription = value["problemDesc"];
                             this._selectProblemDescription =
-                                value["selectItem"];
+                            value["selectItem"];
                             setState(() {});
                             ;
                           });
                         },
-                      ) : Container(),
+                      ),
                       widget.order.ILART == "N06" ? Divider(
                         height: 1,
                       ) : Container(),
@@ -334,8 +337,8 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                             ),
                             Expanded(
                               child: Padding(
-                                padding: EdgeInsets.only(left: 10),
-                                child: Text("其他设备")
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Text("其他设备")
                               ),
                             )
                           ],
@@ -364,13 +367,14 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                         child: Text(
                           '维修完成',
                           style:
-                              TextStyle(color: Color.fromRGBO(76, 129, 235, 1)),
+                          TextStyle(color: Color.fromRGBO(76, 129, 235, 1)),
                         ),
                         color: Color.fromRGBO(76, 129, 235, 1),
                         onPressed: () {
-                          if ((this._device == null ||
-                              this._problemDescription == null ||
-                              this._description.text == "") && widget.order.ILART != "N06") {
+                          bool notHasActionAndDescription = ((this._device == null && !_notShowDevice.contains(widget.order.ILART)) ||
+                              (this._problemDescription == null && !_notShowDescription.contains(widget.order.ILART)) ||
+                              this._description.text == "") && widget.order.ILART != "N06";
+                          if (notHasActionAndDescription) {
                             showCupertinoDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -436,34 +440,34 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                     });
                                     this
                                         ._createOrder(
-                                            res,
-                                            widget.order.AUFNR,
-                                            2,
-                                            pictures,
-                                            video,
-                                            audio,
-                                            this._selectProblemDescription == null ? null : this._selectProblemDescription[
-                                                "text"],
-                                            this._description.text,
-                                            null,
-                                            true,
-                                            widget.order.PERNR,
-                                            widget.order.AUFTEXT,
-                                            widget.order.COLORS,
-                                            "完成",
-                                            widget.order.PLTXT,
-                                            this._device.deviceName,
-                                            new DateTime.now().toString(),
-                                            null)
+                                        res,
+                                        widget.order.AUFNR,
+                                        2,
+                                        pictures,
+                                        video,
+                                        audio,
+                                        this._selectProblemDescription == null ? null : this._selectProblemDescription[
+                                        "text"],
+                                        this._description.text,
+                                        null,
+                                        true,
+                                        widget.order.PERNR,
+                                        widget.order.AUFTEXT,
+                                        widget.order.COLORS,
+                                        "完成",
+                                        widget.order.PLTXT,
+                                        this._device.deviceName,
+                                        new DateTime.now().toString(),
+                                        null)
                                         .then((success) {
                                       this
                                           ._repairComplete(
-                                              widget.order,
+                                          widget.order,
                                           this._problemDescription == null ? null : this._problemDescription.group,
                                           this._selectProblemDescription == null ? null : this._selectProblemDescription[
                                           "code"],
-                                              this._device.deviceCode,
-                                              this._description.text)
+                                          this._device.deviceCode,
+                                          this._description.text)
                                           .then((success) async {
                                         if (success) {
                                           if (widget.order.ILART == "N06" || widget.order.ILART == "N10") {
@@ -473,7 +477,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                                   this._loading = false;
                                                 });
                                                 await HttpRequestRest.pushAlias(
-                                                    [widget.order.PERNR],
+                                                    [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                     "",
                                                     "",
                                                     "${Global.userInfo.ENAME}维修完成",
@@ -533,7 +537,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                               this._loading = false;
                                             });
                                             await HttpRequestRest.pushAlias(
-                                                [widget.order.PERNR],
+                                                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                 "",
                                                 "",
                                                 "${Global.userInfo.ENAME}维修完成",
@@ -574,7 +578,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                                   content: Text(
                                                     "操作失败",
                                                     style:
-                                                        TextStyle(fontSize: 18),
+                                                    TextStyle(fontSize: 18),
                                                   ),
                                                   actions: <Widget>[
                                                     CupertinoDialogAction(
@@ -595,40 +599,40 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                               } else {
                                 this
                                     ._createOrder(
-                                        res,
-                                        widget.order.AUFNR,
-                                        2,
-                                        pictures,
-                                        video,
-                                        audio,
-                                        this._selectProblemDescription == null ? null : this._selectProblemDescription["text"],
-                                        this._description.text,
-                                        null,
-                                        true,
-                                        widget.order.PERNR,
-                                        widget.order.AUFTEXT,
-                                        "1级",
-                                        widget.order.ASTTX,
-                                        widget.order.PLTXT,
-                                        this._device.deviceName,
-                                        new DateTime.now().toString(),
-                                        null)
+                                    res,
+                                    widget.order.AUFNR,
+                                    2,
+                                    pictures,
+                                    video,
+                                    audio,
+                                    this._selectProblemDescription == null ? null : this._selectProblemDescription["text"],
+                                    this._description.text,
+                                    null,
+                                    true,
+                                    widget.order.PERNR,
+                                    widget.order.AUFTEXT,
+                                    "1级",
+                                    widget.order.ASTTX,
+                                    widget.order.PLTXT,
+                                    this._device.deviceName,
+                                    new DateTime.now().toString(),
+                                    null)
                                     .then((success) {
                                   this
                                       ._repairComplete(
-                                          widget.order,
-                                          this._problemDescription == null ? null : this._problemDescription.group,
-                                          this._selectProblemDescription == null ? null : this._selectProblemDescription[
-                                              "code"],
-                                          this._device.deviceCode,
-                                          this._description.text)
+                                      widget.order,
+                                      this._problemDescription == null ? null : this._problemDescription.group,
+                                      this._selectProblemDescription == null ? null : this._selectProblemDescription[
+                                      "code"],
+                                      this._device.deviceCode,
+                                      this._description.text)
                                       .then((success) async {
                                     if (success) {
                                       if (widget.order.ILART == "N06" || widget.order.ILART == "N10") {
                                         await this._complete(widget.order, Global.userInfo.PERNR).then((success) async {
                                           if (success) {
                                             await HttpRequestRest.pushAlias(
-                                                [widget.order.PERNR],
+                                                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                                 "",
                                                 "",
                                                 "${Global.userInfo.ENAME}维修完成",
@@ -688,7 +692,7 @@ class _OrderRepairDetailPageState extends State<OrderRepairDetailPage> {
                                         });
                                       } else {
                                         await HttpRequestRest.pushAlias(
-                                            [widget.order.PERNR],
+                                            [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR],
                                             "",
                                             "",
                                             "${Global.userInfo.ENAME}维修完成",

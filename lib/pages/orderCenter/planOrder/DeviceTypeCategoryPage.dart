@@ -38,21 +38,27 @@ class _DeviceTypeCategoryPageState extends State<DeviceTypeCategoryPage> {
   String _ILART = "";
 
   _listOrder(String ASTTX, String AUART, String ILART) async {
-    setState(() {
-      this._loading = true;
-    });
-    this._list = [];
-    return await HttpRequest.listPlanOrderDeviceType(Global.userInfo.PERNR, _userInfo.WCTYPE == "是" ? "X" : "", ASTTX, AUART, ILART, (t) {
-      this._refreshController.refreshCompleted();
+    if (this.mounted) {
       setState(() {
-        _list = t;
-        this._loading = false;
+        this._loading = true;
       });
+    }
+    this._list = [];
+    return await HttpRequest.listPlanOrderDeviceType(Global.userInfo.PERNR, _userInfo.WCTYPE == "是" ? "X" : "", ASTTX, AUART, ILART, Global.maintenanceGroup, (t) {
+      this._refreshController.refreshCompleted();
+      if (this.mounted) {
+        setState(() {
+          _list = t;
+          this._loading = false;
+        });
+      }
     }, (err) {
       this._refreshController.refreshFailed();
-      setState(() {
-        this._loading = false;
-      });
+      if (this.mounted) {
+        setState(() {
+          this._loading = false;
+        });
+      }
     });
   }
 

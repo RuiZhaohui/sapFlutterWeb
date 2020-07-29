@@ -14,8 +14,11 @@ class Order {
   /// 报修单名称
   String QMTXT;
 
-  /// 负责人员
+  /// 负责人员编码
   String PERNR1;
+
+  /// 负责人员名称
+  String KTEXT1;
 
   /// 维修工单号
   String AUFNR;
@@ -108,6 +111,7 @@ class Order {
         QMNUM = json['QMNUM'],
         QMTXT = json['QMTXT'],
         PERNR1 = json['PERNR1'],
+        KTEXT1 = json['KTEXT1'],
         AUFNR = json['AUFNR'],
         AUFTEXT = json["AUFTEXT"],
         EQUNR = json['EQUNR'],
@@ -135,36 +139,37 @@ class Order {
         ERTIM3 = json["ERTIM3"];
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        "PERNR": PERNR,
-        "KTEXT": KTEXT,
-        "CPLTX": CPLTX,
-        "QMNUM": QMNUM,
-        "QMTXT": QMTXT,
-        "PERNR1": PERNR1,
-        "AUFNR": AUFNR,
-        "AUFTEXT": AUFTEXT,
-        "EQUNR": EQUNR,
-        "EQKTX": EQKTX,
-        "TPLNR": TPLNR,
-        "PLTXT": PLTXT,
-        "BAUTL": BAUTL,
-        "MAKTX": MAKTX,
-        "ASTTX": ASTTX,
-        "acceptTime": acceptTime,
-        "completeTime": completeTime,
-        "createTime": createTime,
-        "isStop": isStop,
-        "CPLGR": CPLGR,
-        "COLORS": COLORS,
-        "WCPLGR": WCPLGR,
-        "WCPLTX": WCPLTX,
-        "WXFZ": WXFZ,
-        "APPSTATUS": APPSTATUS,
-        "ERDAT": ERDAT,
-        "ERTIM": ERTIM,
-        "ERDAT2": ERDAT2,
-        "ERTIM2": ERTIM2,
-        "ERDAT3": ERDAT3,
-        "ERTIM3": ERTIM3
-      };
+    "PERNR": PERNR,
+    "KTEXT": KTEXT,
+    "CPLTX": CPLTX,
+    "QMNUM": QMNUM,
+    "QMTXT": QMTXT,
+    "PERNR1": PERNR1,
+    "KTEXT1": KTEXT1,
+    "AUFNR": AUFNR,
+    "AUFTEXT": AUFTEXT,
+    "EQUNR": EQUNR,
+    "EQKTX": EQKTX,
+    "TPLNR": TPLNR,
+    "PLTXT": PLTXT,
+    "BAUTL": BAUTL,
+    "MAKTX": MAKTX,
+    "ASTTX": ASTTX,
+    "acceptTime": acceptTime,
+    "completeTime": completeTime,
+    "createTime": createTime,
+    "isStop": isStop,
+    "CPLGR": CPLGR,
+    "COLORS": COLORS,
+    "WCPLGR": WCPLGR,
+    "WCPLTX": WCPLTX,
+    "WXFZ": WXFZ,
+    "APPSTATUS": APPSTATUS,
+    "ERDAT": ERDAT,
+    "ERTIM": ERTIM,
+    "ERDAT2": ERDAT2,
+    "ERTIM2": ERTIM2,
+    "ERDAT3": ERDAT3,
+    "ERTIM3": ERTIM3
+  };
 }

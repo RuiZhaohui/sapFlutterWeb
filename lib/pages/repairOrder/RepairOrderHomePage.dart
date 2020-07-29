@@ -44,23 +44,23 @@ class _RepairOrderHomePageState extends State<RepairOrderHomePage> {
     this._list = [];
     return await HttpRequest.listOrder(this._userInfo.PERNR, null, null, null,  _userInfo.WCTYPE == "是" ? "X" : "", null,
         _userInfo.WCTYPE == "是" ? Global.maintenanceGroup : new List(),
-        (List<Order> list) {
-      list.forEach((item) {
-        if (item.PERNR == this._userInfo.PERNR) {
-          this._list.add(item);
-        }
-      });
-      setState(() {
-        this._loading = false;
-      });
-      return true;
-    }, (err) {
-      print(err);
-      setState(() {
-        this._loading = false;
-      });
-      return false;
-    });
+            (List<Order> list) {
+          list.forEach((item) {
+            if (item.PERNR == this._userInfo.PERNR) {
+              this._list.add(item);
+            }
+          });
+          setState(() {
+            this._loading = false;
+          });
+          return true;
+        }, (err) {
+          print(err);
+          setState(() {
+            this._loading = false;
+          });
+          return false;
+        });
   }
 
   Future<Null> onHeaderRefresh() {
@@ -69,23 +69,24 @@ class _RepairOrderHomePageState extends State<RepairOrderHomePage> {
     return new Future(() async {
       return await HttpRequest.listOrder(this._userInfo.PERNR, null, null, null, _userInfo.WCTYPE == "是" ? "X" : "", null,
           _userInfo.WCTYPE == "是" ? Global.maintenanceGroup : new List(),
-          (List list) {
-        list.forEach((item) {
-          if (item.PERNR == this._userInfo.PERNR) {
-            this._list.add(item);
-          }
-        });
-        this._refreshController.refreshCompleted();
-        setState(() {
-          this._loading = false;
-        });
-      }, (err) {
-        print(err);
-        this._refreshController.refreshFailed();
-        setState(() {
-          this._loading = false;
-        });
-      });
+              (List list) {
+            list.forEach((item) {
+              if (item.PERNR == this._userInfo.PERNR) {
+                this._list.add(item);
+              }
+            });
+            this._refreshController.refreshCompleted();
+            print(DateTime.now());
+            setState(() {
+              this._loading = false;
+            });
+          }, (err) {
+            print(err);
+            this._refreshController.refreshFailed();
+            setState(() {
+              this._loading = false;
+            });
+          });
     });
   }
 
@@ -127,7 +128,7 @@ class _RepairOrderHomePageState extends State<RepairOrderHomePage> {
                           onRefresh: onHeaderRefresh,
                           child: ListView.custom(
                             childrenDelegate: SliverChildBuilderDelegate(
-                              (BuildContext context, int index) {
+                                  (BuildContext context, int index) {
                                 return new OrderCardWidget(
                                   title: this._list[index].QMTXT ?? '',
                                   level: (this._list[index].COLORS == null || this._list[index].COLORS == "") ? "" :"${this._levelMap[this._list[index].COLORS]}级",
@@ -136,21 +137,22 @@ class _RepairOrderHomePageState extends State<RepairOrderHomePage> {
                                   position: this._list[index].PLTXT ?? '',
                                   device: this._list[index].EQKTX ?? '',
                                   color: this._list[index].COLORS,
-                                  isStop: true,
+                                  isStop: this._list[index].isStop,
                                   order: this._list[index],
                                   onTap: () {
                                     Navigator.of(widget.rootContext).push(
                                         CupertinoPageRoute(builder: (context) {
-                                      return RepairOrderPage(
-                                        order: this._list[index],
-                                      );
-                                    })).then((val) {
-                                      this._listRepairOrder();
+                                          return RepairOrderPage(
+                                            order: this._list[index],
+                                          );
+                                        })).then((val) {
+//                                      this._refreshController.requestRefresh();
+//                                      this._listRepairOrder();
                                     });
                                   },
                                 );
                               },
-                              childCount: this._list.length,
+                              childCount: this._list?.length ?? 0 + 1,
                             ),
                             shrinkWrap: false,
                           ),

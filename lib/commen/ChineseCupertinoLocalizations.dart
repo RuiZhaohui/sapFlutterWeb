@@ -15,6 +15,12 @@ class ChineseCupertinoLocalizations implements CupertinoLocalizations {
     print(ml.pasteButtonLabel);
   }
 
+
+  @override
+  String tabSemanticsLabel({int tabIndex, int tabCount}) {
+
+  }
+
   @override
   String get alertDialogLabel => ml.alertDialogLabel;
 
@@ -125,6 +131,11 @@ class ChineseCupertinoLocalizations implements CupertinoLocalizations {
   @override
   // TODO: implement todayLabel
   String get todayLabel => null;
+
+  @override
+  String get modalBarrierDismissLabel {
+
+  }
 }
 
 class _ChineseDelegate extends LocalizationsDelegate<CupertinoLocalizations> {

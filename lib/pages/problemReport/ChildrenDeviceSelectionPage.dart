@@ -121,12 +121,55 @@ class _ChildrenDeviceSelectionPageState
     return itemList;
   }
 
+  _autoChangePage(List<Device> deviceList) {
+    var a = findDevice(deviceList, widget.selectItem);
+    Device device;
+    try {
+      device = deviceList.firstWhere((element) => a.contains(element));
+    } catch (e) {
+      return;
+    }
+    if (device.children.length > 0 && device.deviceCode != widget.selectItem.deviceCode) {
+      Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
+        return ChildrenDeviceSelectionPage(device: device.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);
+      })).then((val) {
+        if (val["isOk"]) {
+          this._selectItem = val["item"];
+          Navigator.of(context).pop(val);
+        }
+      });
+    }
+  }
+
+  findDevice(List<Device> deviceList, Device device) {
+    for (Device temp in deviceList) {
+      if (temp.deviceCode == device.deviceCode) {
+        return [temp];
+      } else if (temp.children.length > 0) {
+        List<Device> tempList = findDevice(temp.children, device);
+        if (tempList != null && tempList.length > 0) {
+          tempList.add(temp);
+          return tempList;
+        }
+      }
+    }
+  }
+
 
   @override
   void initState() {
     this._selectItem = widget.selectItem;
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _autoChangePage(widget.device);
+    });
   }
+
+
+//  @override
+//  void didChangeDependencies() {
+//    _autoChangePage(widget.device);
+//  }
 
   @override
   Widget build(BuildContext context) {

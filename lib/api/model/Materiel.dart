@@ -23,6 +23,15 @@ class Materiel {
   int SUMLABST;
   /// 替代料
   List<SubstituteMateriel> list;
+
+  Materiel();
+
+  Materiel.formJson(Map<String, dynamic> json)
+      : MATNR=json['materialsCode'],
+        MAKTX=json['materialsName'],
+        WERKS=json['factoryCode'],
+        NAME1=json['factoryName'],
+        MEINS=json['unit'];
 }
 
 class SubstituteMateriel {

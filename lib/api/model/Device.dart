@@ -4,6 +4,7 @@ class Device {
   String positionCode;
   String deviceCode;
   String deviceName;
+  String deviceType;
   List<Device> children;
 
   Device();
@@ -14,6 +15,7 @@ class Device {
         positionCode = json['positionCode'],
         deviceCode = json['deviceCode'],
         deviceName = json['deviceName'],
+        deviceType = json['deviceType'],
         children = json['children'].length == 0 ? [] : List<Device>.from(json['children'].map((item) {
           return Device.formJson(item);
         }).toList());
@@ -24,6 +26,7 @@ class Device {
     "positionCode": positionCode,
     "deviceCode": deviceCode,
     "deviceName": deviceName,
+    "deviceType": deviceType,
     "children": []
   };
 }

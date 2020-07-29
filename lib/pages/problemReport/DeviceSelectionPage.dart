@@ -57,8 +57,13 @@ class _DeviceSelectionPageState extends State<DeviceSelectionPage> {
           setState(() {
             this._loading = false;
           });
-
-          FunctionPosition position = _position.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
+          print(DateTime.now());
+          FunctionPosition position;
+          try {
+            position = _position.firstWhere((element) => widget.selectItem.positionCode.contains(element.positionCode));
+          } catch (e) {
+            return;
+          }
           if (position.children.length > 0) {
             Navigator.of(context).push(CupertinoPageRoute(builder: (BuildContext context) {
               return ChildrenPositionSelectionPage(position: position.children, selectItem: widget.selectItem, isAddMaterial: widget.isAddMaterial, AUFNR: widget.AUFNR,);

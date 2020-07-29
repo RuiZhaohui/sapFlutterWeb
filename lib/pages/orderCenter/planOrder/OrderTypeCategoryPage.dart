@@ -36,22 +36,26 @@ class _OrderTypeCategoryPageState extends State<OrderTypeCategoryPage> {
   String _ASTTX = "";
 
   _listOrder(String ASTTX, String AUART) async {
-    setState(() {
-      this._loading = true;
-    });
+    if (this.mounted) {
+      setState(() {
+        this._loading = true;
+      });
+    }
     this._list = [];
-      return await HttpRequest.listPlanOrderType(Global.userInfo.PERNR, _userInfo.WCTYPE == "是" ? "X" : "", ASTTX, AUART, (t) {
-        this._refreshController.refreshCompleted();
+    return await HttpRequest.listPlanOrderType(Global.userInfo.PERNR, _userInfo.WCTYPE == "是" ? "X" : "", ASTTX, AUART, Global.maintenanceGroup, (t) {
+      if (this.mounted) {
         setState(() {
           _list = t;
           this._loading = false;
         });
-      }, (err) {
-        this._refreshController.refreshFailed();
-        setState(() {
-          this._loading = false;
-        });
+        this._refreshController.refreshCompleted();
+      }
+    }, (err) {
+      setState(() {
+        this._loading = false;
       });
+      this._refreshController.refreshFailed();
+    });
   }
 
   Future<Null> onHeaderRefresh() async {
@@ -97,8 +101,8 @@ class _OrderTypeCategoryPageState extends State<OrderTypeCategoryPage> {
                           enablePullDown: true,
                           onRefresh: onHeaderRefresh,
                           child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: _list == null ? 0 : _list.length,
+                              scrollDirection: Axis.vertical,
+                              itemCount: _list == null ? 0 : _list.length,
                               itemBuilder: (BuildContext context, int index) {
                                 return ListItemWidget(
                                   title: Row(

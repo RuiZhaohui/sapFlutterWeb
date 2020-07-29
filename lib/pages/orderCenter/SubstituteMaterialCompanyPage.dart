@@ -3,7 +3,6 @@ import 'package:gztyre/api/model/Materiel.dart';
 import 'package:gztyre/components/ButtonBarWidget.dart';
 import 'package:gztyre/components/ButtonWidget.dart';
 import 'package:gztyre/components/ListItemSelectWidget.dart';
-import 'package:gztyre/components/ListItemWidget.dart';
 
 class SubstituteMaterialCompanyPage extends StatefulWidget {
   SubstituteMaterialCompanyPage({Key key, this.list}) : super(key: key);
@@ -21,7 +20,7 @@ class _SubstituteMaterialCompanyPageState extends State<SubstituteMaterialCompan
     List<Widget>  list = new List();
     for (int i = 0; i < substituteMaterielList.length; i++) {
       list.add(
-        ListItemSelectWidget(title: Text(substituteMaterielList[i].NAME1), item: substituteMaterielList[i], selectedItem: this._selectItem)
+          ListItemSelectWidget(title: Text(substituteMaterielList[i].NAME1), item: substituteMaterielList[i], selectedItem: this._selectItem)
       );
     }
     return list;

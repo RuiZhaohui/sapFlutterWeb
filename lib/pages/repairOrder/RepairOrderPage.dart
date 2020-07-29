@@ -55,7 +55,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
       return map['tradeNo'];
     }, (err) async {
       this._resetAPPTRANENO(widget.order);
-      this._loading = false;
+//      this._loading = false;
       throw Error();
     });
   }
@@ -121,6 +121,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
             await HttpRequest.repairOrderDetail(widget.order.AUFNR,
                     (RepairOrder rOrder) {
                   this._repairOrder = rOrder;
+                  widget.order.isStop = rOrder.MSAUS;
                   setState(() {
                     this._loading = false;
                   });
@@ -145,66 +146,66 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
 
   Future<bool> _complete(
       Order order, ReportOrder reportOrder, String PERNR) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
       return await HttpRequest.completeOrder(
           PERNR, order.AUFNR, "已确认", APPTRADENO, (res) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return true;
       }, (err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
 
   Future<bool> _repairAgain() async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await this
         ._getAPPTRADENO(widget.order.QMNUM, widget.order.AUFNR)
         .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(null, null, widget.order.AUFNR,
           "再维修", APPTRADENO, '', '', widget.order.EQUNR, null, null, (res) {
-            setState(() {
-              this._loading = false;
-            });
+//        setState(() {
+//          this._loading = false;
+//        });
             return true;
           }, (err) {
-            setState(() {
-              this._loading = false;
-            });
+//        setState(() {
+//          this._loading = false;
+//        });
             return false;
           });
     }).catchError((err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     });
   }
 
   Future<bool> _transToNextWorkShift(
       ReportOrder reportOrder, String PERNR) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     if (reportOrder == null) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return false;
     } else {
       return await this
@@ -221,33 +222,33 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
             reportOrder.EQUNR,
             null,
             null, (res) {
-          setState(() {
-            this._loading = false;
-          });
+//          setState(() {
+//            this._loading = false;
+//          });
           return true;
         }, (err) {
-          setState(() {
-            this._loading = false;
-          });
+//          setState(() {
+//            this._loading = false;
+//          });
           return false;
         });
       }).catchError((err) {
-        setState(() {
-          this._loading = false;
-        });
+//        setState(() {
+//          this._loading = false;
+//        });
         return false;
       });
     }
   }
 
   Future<String> _isExist(username) async {
-    setState(() {
-      this._loading = true;
-    });
+//    setState(() {
+//      this._loading = true;
+//    });
     return await HttpRequestRest.exist(username, (isExist) async {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       if (isExist) {
         return await HttpRequestRest.searchUser(username, (data) {
           return data["werks"];
@@ -256,9 +257,9 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
         return null;
       }
     }, (err) {
-      setState(() {
-        this._loading = false;
-      });
+//      setState(() {
+//        this._loading = false;
+//      });
       return null;
     });
   }
@@ -351,7 +352,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
                               this._loading = false;
                             });
                             await HttpRequestRest.pushAlias(
-                                [widget.order.PERNR1],
+                                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR1],
                                 "",
                                 "",
                                 "${Global.userInfo.ENAME}已确认维修单${widget.order.AUFNR}完工",
@@ -418,7 +419,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
               this._loading = false;
             });
             await HttpRequestRest.pushAlias(
-                [widget.order.PERNR1],
+                [Global.userInfo.CPLGR + Global.userInfo.MATYP + widget.order.PERNR1],
                 "",
                 "",
                 "${Global.userInfo.ENAME}请求再维修维修单${widget.order.AUFNR}",
@@ -504,6 +505,9 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
                   CupertinoDialogAction(
                     onPressed: () {
                       Navigator.of(contextA).pop();
+                      setState(() {
+                        this._loading = true;
+                      });
                       this._isExist(this._controller.text).then((value) {
                         if (value != null && value == Global.userInfo.WERKS) {
                           this
@@ -515,7 +519,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
                                 this._loading = false;
                               });
                               await HttpRequestRest.pushAlias(
-                                  [_controller.text],
+                                  [Global.userInfo.CPLGR + Global.userInfo.MATYP + _controller.text],
                                   "",
                                   "",
                                   "${Global.userInfo.ENAME}转单",
@@ -1025,8 +1029,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
         )
             : Container(),
         (widget.order.ASTTX == "已完工") &&
-            (_engineer.contains(Global.userInfo.SORTB)) &&
-            !widget.order.isStop
+            (_engineer.contains(Global.userInfo.SORTB) || _maintenanceWorker.contains(Global.userInfo.SORTB))
             ? Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -1044,12 +1047,51 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
                           child: _transferToNextWorkShiftButton(),
                         ),
                       ),
-                      Expanded(
+                      (_engineer.contains(Global.userInfo.SORTB)) ? Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 10, right: 10),
                           child: _reRepairButton(),
                         ),
+                      ) : Container(),
+                      !widget.order.isStop ? Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: _completeButton(),
+                        ),
+                      ) : Container(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        )
+            : Container(),
+        (widget.order.ASTTX == "已完工") &&
+            widget.order.isStop
+            ? Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            height: 80,
+            child: ButtonBarWidget(
+              button: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: _transferToNextWorkShiftButton(),
+                        ),
                       ),
+                      (_engineer.contains(Global.userInfo.SORTB)) ? Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: _reRepairButton(),
+                        ),
+                      ) : Container(),
                     ],
                   ),
                 ],
@@ -1336,8 +1378,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
         )
             : Container(),
         (widget.order.ASTTX == "已完工") &&
-            (_engineer.contains(Global.userInfo.SORTB)) &&
-            !widget.order.isStop
+            (_engineer.contains(Global.userInfo.SORTB) || _maintenanceWorker.contains(Global.userInfo.SORTB))
             ? Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -1355,12 +1396,18 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
                           child: _transferToNextWorkShiftButton(),
                         ),
                       ),
-                      Expanded(
+                      _engineer.contains(Global.userInfo.SORTB) ? Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(left: 10, right: 10),
                           child: _reRepairButton(),
                         ),
-                      ),
+                      ) : Container(),
+                      !widget.order.isStop ? Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 10, right: 10),
+                          child: _completeButton(),
+                        ),
+                      ) : Container()
                     ],
                   ),
                 ],
@@ -1483,6 +1530,7 @@ class _RepairOrderPageState extends State<RepairOrderPage> {
 
   @override
   void initState() {
+    widget.order.isStop = widget.order.isStop ?? false;
     this._userInfo = Global.userInfo;
     this._reportOrderDetailFuture = this._orderDetail();
     super.initState();

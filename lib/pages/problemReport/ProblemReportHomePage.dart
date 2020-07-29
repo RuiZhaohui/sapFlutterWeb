@@ -1,12 +1,12 @@
+import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gztyre/api/HttpRequest.dart';
 import 'package:gztyre/api/HttpRequestRest.dart';
 import 'package:gztyre/api/model/Device.dart';
-import 'package:gztyre/api/model/FunctionPosition.dart';
 import 'package:gztyre/api/model/ProblemDescription.dart';
 import 'package:gztyre/api/model/RepairType.dart';
 import 'package:gztyre/commen/Global.dart';
@@ -18,13 +18,12 @@ import 'package:gztyre/components/ListItemWidget.dart';
 import 'package:gztyre/components/ProgressDialog.dart';
 import 'package:gztyre/components/TextareaWidget.dart';
 import 'package:gztyre/components/TextareaWithPicAndVideoForWebWidget.dart';
-import 'package:gztyre/components/TextareaWithPicAndVideoWidget.dart';
 import 'package:gztyre/pages/problemReport/DeviceSelectionPage.dart';
 import 'package:gztyre/pages/problemReport/ProblemDescriptionPage.dart';
 import 'package:gztyre/pages/problemReport/RepairTypePage.dart';
 import 'package:gztyre/utils/ListController.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:html' as html;
+import 'package:gztyre/api/model/Materiel.dart' as LocalMaterial;
 
 class ProblemReportHomePage extends StatefulWidget {
   ProblemReportHomePage({Key key, @required this.rootContext})
@@ -48,6 +47,7 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
   ListController _list = ListController(list: []);
 
   Device _device;
+  LocalMaterial.Materiel _searchMaterial;
 
 //  FunctionPosition _position;
   RepairType _repairType;
@@ -56,6 +56,43 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
 
   bool _loading = false;
   Map<String, String> result;
+  Map<String, String> _buttonText = new HashMap();
+  List<String> _notShowDevice = ["N08"];
+  List<String> _notShowStop = ["N08", "N13"];
+  List<String> _notShowDescription = ["N08", "N09", "N13"];
+
+  _initButtonText() {
+    _buttonText.putIfAbsent("N01", () => "上报故障");
+    _buttonText.putIfAbsent("N02", () => "上报故障");
+    _buttonText.putIfAbsent("N03", () => "上报故障");
+    _buttonText.putIfAbsent("N04", () => "上报故障");
+    _buttonText.putIfAbsent("N05", () => "上报故障");
+    _buttonText.putIfAbsent("N06", () => "上报故障");
+    _buttonText.putIfAbsent("N07", () => "上报故障");
+    _buttonText.putIfAbsent("N08", () => "备件维修");
+    _buttonText.putIfAbsent("N09", () => "上报故障");
+    _buttonText.putIfAbsent("N10", () => "上报故障");
+    _buttonText.putIfAbsent("N11", () => "上报故障");
+    _buttonText.putIfAbsent("N12", () => "上报故障");
+    _buttonText.putIfAbsent("N13", () => "发起活动");
+    _buttonText.putIfAbsent("N14", () => "上报故障");
+    _buttonText.putIfAbsent("N15", () => "上报故障");
+    _buttonText.putIfAbsent("N16", () => "上报故障");
+    _buttonText.putIfAbsent("N17", () => "上报故障");
+    _buttonText.putIfAbsent("N18", () => "上报故障");
+    _buttonText.putIfAbsent("N19", () => "上报故障");
+    _buttonText.putIfAbsent("N20", () => "上报故障");
+    _buttonText.putIfAbsent("N21", () => "上报故障");
+    _buttonText.putIfAbsent("N22", () => "上报故障");
+    _buttonText.putIfAbsent("N23", () => "上报故障");
+    _buttonText.putIfAbsent("N24", () => "上报故障");
+    _buttonText.putIfAbsent("N25", () => "上报故障");
+    _buttonText.putIfAbsent("N26", () => "上报故障");
+    _buttonText.putIfAbsent("N27", () => "上报故障");
+    _buttonText.putIfAbsent("N28", () => "上报故障");
+    _buttonText.putIfAbsent("N29", () => "上报故障");
+    _buttonText.putIfAbsent("N30", () => "上报故障");
+  }
 
 //  List<String> _list = [];
 
@@ -66,7 +103,7 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
             ["A01", "A02", "A03"].contains(item.SORTB) &&
             item.KTEX1 == "闲置";
       }).map((item) {
-        return item.PERNR;
+        return Global.userInfo.CPLGR + Global.userInfo.MATYP + item.PERNR;
       }).toList();
       await HttpRequestRest.pushAlias(workerList, "", "",
           "${Global.userInfo.ENAME}上报维修", [], (success) {}, (err) {});
@@ -86,9 +123,11 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
 
   _commitReport() {
 
-    if (this._device == null ||
-        this._repairType == null ||
-        this._problemDescription == null ||
+    if (
+    this._repairType == null ||
+        (this._device == null && !_notShowDevice.contains(_repairType.ILART)) ||
+        (this._problemDescription == null && !_notShowDescription.contains(_repairType.ILART) ) ||
+        this._description.text == null ||
         (this._repairType.ILART == "N08" && (_bautl.text == null || _bautlNum.text == null))) {
       showCupertinoDialog(
           context: context,
@@ -115,6 +154,25 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
             return CupertinoAlertDialog(
               content: Text(
                 "备件编号请以 WX 开头",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
+    } else if (this._repairType.ILART == "N08" && _searchMaterial == null) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "未查询到备件",
                 style: TextStyle(fontSize: 18),
               ),
               actions: <Widget>[
@@ -538,6 +596,7 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
                                   .rootContext,
                               builder: (BuildContext
                               context) {
+                                print(DateTime.now());
                                 return CupertinoAlertDialog(
                                   content: Text(
                                     "上报成功",
@@ -682,6 +741,25 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
               ],
             );
           });
+    } else if (this._repairType.ILART == "N08" && _searchMaterial == null) {
+      showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              content: Text(
+                "未查询到备件",
+                style: TextStyle(fontSize: 18),
+              ),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("好"),
+                ),
+              ],
+            );
+          });
     } else {
       showCupertinoDialog(
           context: context,
@@ -789,7 +867,7 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
                                 ? 0
                                 : int.parse(this._bautlNum.text),
                                 (res) {
-                              sapNo = left;
+                              sapNo = res;
 //                          result = res;
                               HttpRequestRest.malfunction(
                                   left,
@@ -833,9 +911,9 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
                                 setState(() {
                                   this._loading = false;
                                 });
-                                _notification(
-                                    left,
-                                    res["WCPLGR"]);
+//                            _notification(
+//                                left,
+//                                res["WCPLGR"]);
                                 showCupertinoDialog(
                                     context: widget
                                         .rootContext,
@@ -1015,7 +1093,7 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
                               ? 0
                               : int.parse(this._bautlNum.text),
                               (res) {
-                            sapNo = left;
+                            sapNo = res;
 //                        result = res;
                             HttpRequestRest.malfunction(
                                 left,
@@ -1064,9 +1142,9 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
                               setState(() {
                                 this._loading = false;
                               });
-                              _notification(
-                                  left,
-                                  result["WCPLGR"]);
+//                          _notification(
+//                              left,
+//                              result["WCPLGR"]);
                               showCupertinoDialog(
                                   context: widget
                                       .rootContext,
@@ -1178,12 +1256,35 @@ class _ProblemReportHomePageState extends State<ProblemReportHomePage> {
     }
   }
 
-
   @override
   void initState() {
-super.initState();
+    _initButtonText();
+    var _timer;
+    _timer = Timer(Duration(seconds: 1), () {
+      if (_bautl.text != null && _bautl.text != '') {
+        HttpRequestRest.getMateriel(_bautl.text, (materiel) {
+          _searchMaterial = materiel;
+        }, (err) {
+          print('error');
+        });
+      }
+    });
+    _bautl.addListener(() {
+      _timer.cancel();
+      _timer = Timer(Duration(seconds: 1), () {
+        if (_bautl.text != null && _bautl.text != '') {
+          HttpRequestRest.getMateriel(_bautl.text, (materiel) {
+            setState(() {
+              _searchMaterial = materiel;
+            });
+          }, (err) {
+            print('error');
+          });
+        }
+      });
+    });
+    super.initState();
   }
-
 
   @override
   void dispose() {
@@ -1196,7 +1297,6 @@ super.initState();
     }
     super.dispose();
   }
-
 
   @override
   void deactivate() {
@@ -1218,7 +1318,7 @@ super.initState();
                   child: ListView(
                     shrinkWrap: true,
                     children: <Widget>[
-                      ListItemWidget(
+                      this._repairType != null && _notShowDevice.contains(this._repairType.ILART) ? Container() : ListItemWidget(
                         title: Row(
                           children: <Widget>[
                             ImageIcon(
@@ -1251,10 +1351,10 @@ super.initState();
                           Navigator.of(widget.rootContext).push(
                               CupertinoPageRoute(
                                   builder: (BuildContext context) {
-                            return DeviceSelectionPage(
-                              selectItem: this._device ?? new Device(),
-                            );
-                          })).then((val) {
+                                    return DeviceSelectionPage(
+                                      selectItem: this._device ?? new Device(),
+                                    );
+                                  })).then((val) {
                             if (val["isOk"]) {
                               this._device = val["item"];
                               setState(() {});
@@ -1262,8 +1362,8 @@ super.initState();
                           });
                         },
                       ),
-                      DividerBetweenIconListItem(),
-                      ListItemSwitchWidget(
+                      this._repairType != null && _notShowStop.contains(this._repairType.ILART) ? Container() : DividerBetweenIconListItem(),
+                      this._repairType != null && _notShowStop.contains(this._repairType.ILART) ? Container() : ListItemSwitchWidget(
                         title: Row(
                           children: <Widget>[
                             ImageIcon(
@@ -1302,8 +1402,8 @@ super.initState();
                                     : Text(
                                   this._repairType.ILATX,
                                   style: TextStyle(
-                                      color:
-                                      Color.fromRGBO(52, 115, 178, 1)),
+                                      color: Color.fromRGBO(
+                                          52, 115, 178, 1)),
                                 ),
                               ),
                             )
@@ -1313,17 +1413,17 @@ super.initState();
                           Navigator.of(widget.rootContext).push(
                               CupertinoPageRoute(
                                   builder: (BuildContext context) {
-                            return RepairTypePage(
-                              selectItem: this._repairType,
-                            );
-                          })).then((value) {
+                                    return RepairTypePage(
+                                      selectItem: this._repairType,
+                                    );
+                                  })).then((value) {
                             this._repairType = value;
                             setState(() {});
                           });
                         },
                       ),
                       DividerBetweenIconListItem(),
-                      ListItemWidget(
+                      this._repairType != null && _notShowDescription.contains(this._repairType.ILART) ? Container() : ListItemWidget(
                         title: Row(
                           children: <Widget>[
                             ImageIcon(
@@ -1335,13 +1435,14 @@ super.initState();
                             Expanded(
                               child: Padding(
                                 padding: EdgeInsets.only(left: 10),
-                                child: this._selectProblemDescription == null || this._problemDescription == null
+                                child: this._selectProblemDescription == null ||
+                                    this._problemDescription == null
                                     ? Text("故障描述")
                                     : Text(
                                   '${this._problemDescription.title}-${this._selectProblemDescription["text"]}',
                                   style: TextStyle(
-                                      color:
-                                      Color.fromRGBO(52, 115, 178, 1)),
+                                      color: Color.fromRGBO(
+                                          52, 115, 178, 1)),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1353,12 +1454,13 @@ super.initState();
                           Navigator.of(widget.rootContext).push(
                               CupertinoPageRoute(
                                   builder: (BuildContext context) {
-                            return ProblemDescriptionPage(
-                              type: "C",
-                            );
-                          })).then((value) {
+                                    return ProblemDescriptionPage(
+                                      type: "C",
+                                    );
+                                  })).then((value) {
                             this._problemDescription = value["problemDesc"];
-                            this._selectProblemDescription = value["selectItem"];
+                            this._selectProblemDescription =
+                            value["selectItem"];
                             setState(() {});
                           });
                         },
@@ -1378,7 +1480,20 @@ super.initState();
                               placeholder: "物料数量",
                               type: TextInputType.number,
                               lines: 1,
-                            )
+                            ),
+                            _searchMaterial != null ? Divider(height: 1,) : Container(),
+                            _searchMaterial != null ? FractionallySizedBox(
+                              widthFactor: 1,
+                              child: Container(
+                                color: Colors.white,
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 16, top: 10, bottom: 10),
+                                  child: Text(_searchMaterial.MAKTX, style: TextStyle(
+                                      color: Colors.grey
+                                  ),),
+                                ),
+                              ),
+                            ) : Container()
                           ],
                         ),
                       ) : Container(),
@@ -1402,8 +1517,12 @@ super.initState();
                             color: Colors.transparent,
                             child: ButtonWidget(
                               padding: EdgeInsets.all(0),
-                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                              child: Text('上报故障', style: TextStyle(color: Colors.redAccent),),
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(6.0)),
+                              child: Text(
+                                _repairType == null ? "上报故障" : _buttonText[_repairType.ILART],
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
                               color: Colors.transparent,
                               onPressed: () {
                                 if (_repairType != null) {

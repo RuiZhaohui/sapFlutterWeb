@@ -184,6 +184,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -259,6 +260,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -335,6 +337,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -367,7 +370,7 @@ class XmlUtils {
     }
   }
 
-  static xml.XmlNode buildPlanOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART) {
+  static xml.XmlNode buildPlanOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, List<String> ItWxfz) {
     var builder = new xml.XmlBuilder();
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
@@ -383,7 +386,13 @@ class XmlUtils {
                 builder.element("Auart", nest: AUART);
               });
               builder.element("EtData", attributes: {"xmlns": ""});
-              builder.element("ItWxfz", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""}, nest: () {
+                ItWxfz.map((item) {
+                  return builder.element("item", nest: () {
+                    builder.element("Wxfz", nest: item);
+                  });
+                }).toList();
+              });
             });
           });
         });
@@ -406,7 +415,7 @@ class XmlUtils {
     }
   }
 
-  static xml.XmlNode buildPlanOrderDeviceTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART) {
+  static xml.XmlNode buildPlanOrderDeviceTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART, List<String> ItWxfz) {
     var builder = new xml.XmlBuilder();
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
@@ -423,7 +432,13 @@ class XmlUtils {
                 builder.element("Ilart", nest: ILART);
               });
               builder.element("EtData", attributes: {"xmlns": ""});
-              builder.element("ItWxfz", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""}, nest: () {
+                ItWxfz.map((item) {
+                  return builder.element("item", nest: () {
+                    builder.element("Wxfz", nest: item);
+                  });
+                }).toList();
+              });
             });
           });
         });
@@ -446,7 +461,7 @@ class XmlUtils {
     }
   }
 
-  static xml.XmlNode buildPlanOrderByDeviceTypeAndOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART, String EQUNR) {
+  static xml.XmlNode buildPlanOrderByDeviceTypeAndOrderTypeXml(String PERNR, String WCTYPE, String ASTTX, String AUART, String ILART, String EQUNR, List<String> ItWxfz) {
     var builder = new xml.XmlBuilder();
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
@@ -464,7 +479,13 @@ class XmlUtils {
                 builder.element("Equnr", nest: EQUNR);
               });
               builder.element("ItOrder", attributes: {"xmlns": ""});
-              builder.element("ItWxfz", attributes: {"xmlns": ""});
+              builder.element("ItWxfz", attributes: {"xmlns": ""}, nest: () {
+                ItWxfz.map((item) {
+                  return builder.element("item", nest: () {
+                    builder.element("Wxfz", nest: item);
+                  });
+                }).toList();
+              });
             });
           });
         });
@@ -482,6 +503,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -558,6 +580,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -634,6 +657,7 @@ class XmlUtils {
         order.QMNUM = e.findElements("Qmnum").first.text;
         order.QMTXT = e.findElements("Qmtxt").first.text;
         order.PERNR1 = e.findElements("Pernr1").first.text;
+        order.KTEXT1 = e.findElements("Ktext1").first.text;
         order.AUFNR = e.findElements("Aufnr").first.text;
         order.AUFTEXT = e.findElements("Auftext").first.text;
         order.EQUNR = e.findElements("Equnr").first.text;
@@ -781,7 +805,7 @@ class XmlUtils {
         order.KTEXT2 = "";
         order.PERNR1 = "";
         order.MAKTX = item.findAllElements("Maktx").first.text;
-        order.ENMG = item.findAllElements("Enmg").first.text;
+        order.ENMG = item.findAllElements("Enmng").first.text;
         order.ERDAT = item.findAllElements("Erdat").first.text;
         order.ERTIM = item.findAllElements("Ertim").first.text;
         order.APPSTATUS = item.findAllElements("Appstatus").first.text;
@@ -1054,7 +1078,7 @@ class XmlUtils {
       String MSAUS,
       String APPTRADENO,
       String BAUTL,
-      int Gaming) {
+      int Gamng) {
     var builder = new xml.XmlBuilder();
     builder.element("Envelope",
         attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
@@ -1079,7 +1103,7 @@ class XmlUtils {
                 builder.element("Msaus", nest: MSAUS);
                 builder.element("Apptradeno", nest: APPTRADENO);
                 builder.element("Bautl", nest: BAUTL ?? "");
-                builder.element("Gaming", nest: Gaming == null ? '' : Gaming.toString());
+                builder.element("Gamng", nest: Gamng == null ? '' : Gamng.toString());
               });
             });
           });
@@ -1157,7 +1181,7 @@ class XmlUtils {
       if (flag) {
         return true;
       } else
-        throw DioError();
+        throw DioError(error: document.findAllElements("Message").first.text);
     } catch (e) {
       throw DioError();
     }
@@ -1417,13 +1441,14 @@ class XmlUtils {
     try {
       document.findAllElements("MType").forEach((item) {
         if (item.text == "E")
-          throw DioError();
+          throw DioError(error: document.findAllElements("Message").first.text);
         else
           flag = true;
       });
       return flag;
     } catch (e) {
-      throw DioError();
+      if (e is DioError) throw e;
+      else throw DioError();
     }
   }
 
@@ -1456,6 +1481,7 @@ class XmlUtils {
       order.QMNUM = e.findElements("Qmnum").first.text;
       order.QMTXT = e.findElements("Qmtxt").first.text;
       order.PERNR1 = e.findElements("Pernr1").first.text;
+      order.KTEXT1 = e.findElements("Ktext1").first.text;
       order.AUFNR = e.findElements("Aufnr").first.text;
       order.AUFTEXT = e.findElements("KtextAufnr").first.text;
       order.ILATX = e.findAllElements("Ilatx").first.text;
@@ -1508,6 +1534,33 @@ class XmlUtils {
       print(double.parse(e.findElements("Enmng").first.text).floor());
       submitMateriel.MENGE = double.parse(e.findElements("Enmng").first.text).floor();
       return submitMateriel;
+    }).toList();
+    return list;
+  }
+
+
+  static xml.XmlNode buildHelpWorker(
+      String AUFNR) {
+    var builder = new xml.XmlBuilder();
+    builder.element("Envelope",
+        attributes: {"xmlns": "http://schemas.xmlsoap.org/soap/envelope/"},
+        nest: () {
+          builder.element("Body", nest: () {
+            builder.element("ZpmSearchOrderJrPernr", attributes: {
+              "xmlns": "urn:sap-com:document:sap:soap:functions:mc-style"
+            }, nest: () {
+              builder.element("EtData", attributes: {"xmlns": ""});
+              builder.element("IAufnr", attributes: {"xmlns": ""}, nest: AUFNR);
+            });
+          });
+        });
+    return builder.build();
+  }
+
+  static List<String> readHelpWorker(String stringXml) {
+    var document = xml.parse(stringXml);
+    List<String> list = document.findAllElements("item").map((e) {
+      return e.findElements("Pernr").first.text;
     }).toList();
     return list;
   }

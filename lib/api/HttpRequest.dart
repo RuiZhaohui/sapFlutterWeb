@@ -19,9 +19,9 @@ import 'package:gztyre/utils/XmlUtils.dart';
 
 class HttpRequest {
   static Dio http = new Dio(BaseOptions(
-//      baseUrl: "http://pmapp.gztyre.com:8080/api/sap", //生产
+      baseUrl: "http://pmapp.gztyre.com:8080/api/sap", //生产
 //      baseUrl: "http://192.168.6.211:8070/api/sap", //开发
-      baseUrl: "http://localhost:8070/api/sap", //本地
+//      baseUrl: "http://localhost:8070/api/sap", //本地
       connectTimeout: 30000));
 
   /// 查询用户信息
@@ -159,9 +159,10 @@ class HttpRequest {
       String WCTYPE,
       String ASTTX,
       String AUART,
+      List<String> ItWxfz,
       Function(List<RepairTypeDetail> t) onSuccess,
       Function(DioError err) onError) async {
-    var xml = XmlUtils.buildPlanOrderTypeXml(PERNR, WCTYPE, ASTTX, AUART);
+    var xml = XmlUtils.buildPlanOrderTypeXml(PERNR, WCTYPE, ASTTX, AUART, ItWxfz);
     print(xml);
     try {
       Response response = await http.post("/proxy", data: {
@@ -184,10 +185,11 @@ class HttpRequest {
       String ASTTX,
       String AUART,
       String ILART,
+      List<String> ItWxfz,
       Function(List<DeviceTypeDetail> t) onSuccess,
       Function(DioError err) onError) async {
     var xml = XmlUtils.buildPlanOrderDeviceTypeXml(
-        PERNR, WCTYPE, ASTTX, AUART, ILART);
+        PERNR, WCTYPE, ASTTX, AUART, ILART, ItWxfz);
     print(xml);
     try {
       Response response = await http.post("/proxy", data: {
@@ -210,10 +212,11 @@ class HttpRequest {
       String AUART,
       String ILART,
       String EQUNR,
+      List<String> ItWxfz,
       Function(List<Order> t) onSuccess,
       Function(DioError err) onError) async {
     var xml = XmlUtils.buildPlanOrderByDeviceTypeAndOrderTypeXml(
-        PERNR, WCTYPE, ASTTX, AUART, ILART, EQUNR);
+        PERNR, WCTYPE, ASTTX, AUART, ILART, EQUNR, ItWxfz);
     print(xml);
     try {
       Response response = await http.post("/proxy", data: {
@@ -466,7 +469,7 @@ class HttpRequest {
       String MSAUS,
       String APPTRADENO,
       String BAUTL,
-      int GAMING,
+      int GAMNG,
       Function(String AUFNR) onSuccess,
       Function(DioError err) onError) async {
     var xml = XmlUtils.buildRepairOrderXml(
@@ -484,7 +487,7 @@ class HttpRequest {
         MSAUS,
         APPTRADENO,
         BAUTL,
-        GAMING);
+        GAMNG);
     print(xml);
     try {
       Response response = await http.post(
@@ -703,6 +706,26 @@ class HttpRequest {
         "xml": xml.toXmlString()
       });
       return await onSuccess(XmlUtils.readMaterialTemp(response.data['data']));
+    } on DioError catch (e) {
+      return await onError(e);
+    }
+  }
+
+  /// 协助单所有已加入人员查询
+  static listHelpWorker(
+      String AUFNR,
+      Function(List<String>) onSuccess,
+      Function(DioError err) onError) async {
+    var xml = XmlUtils.buildHelpWorker(AUFNR);
+    print(xml);
+    try {
+      Response response = await http.post(
+          "/proxy",
+          data: {
+            "path": "/zpm_search_order_jr_pernr/888/zpm_search_order_jr_pernr/zpm_search_order_jr_pernr",
+            "xml": xml.toXmlString()
+          });
+      return await onSuccess(XmlUtils.readHelpWorker(response.data['data']));
     } on DioError catch (e) {
       return await onError(e);
     }

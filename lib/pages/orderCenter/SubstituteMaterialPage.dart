@@ -82,11 +82,11 @@ class _SubstituteMaterialPageState extends State<SubstituteMaterialPage> {
       child: SafeArea(
 //        child: BottomDragWidget(
 //          body: CupertinoScrollbar(
-              child: ListView(
-                children: <Widget>[
-                  ...this._buildList(widget.list)
-                ],
-              )
+          child: ListView(
+            children: <Widget>[
+              ...this._buildList(widget.list)
+            ],
+          )
 //          ),
 //        ),
       ),

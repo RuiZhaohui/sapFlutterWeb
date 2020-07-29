@@ -12,11 +12,7 @@ import 'package:gztyre/pages/orderCenter/assisantOrder/OrderListPage.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class AssisantOrderCenterHomePage extends StatefulWidget {
-  AssisantOrderCenterHomePage({Key key, @required this.rootContext})
-      : assert(rootContext != null),
-        super(key: key);
-
-  final BuildContext rootContext;
+  AssisantOrderCenterHomePage({Key key}) :super(key: key);
 
   @override
   State createState() => _AssisantOrderCenterHomePageState();
@@ -66,7 +62,7 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
             (item.APPSTATUS == "接单" ||
                 item.APPSTATUS == "转单" ||
                 (item.APPSTATUS == "呼叫协助") ||
-                (item.APPSTATUS == "加入"))) {
+                (item.APPSTATUS == "加入")) && ((isManager && item.ILART != "N06") || item.PERNR1 == _userInfo.PERNR)) {
           resList.add(item);
         }
       });
@@ -90,7 +86,7 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
       list.forEach((item) {
         if (item.QMNUM != null &&
             item.QMNUM != '' &&
-            (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入")) {
+            (item.APPSTATUS == "呼叫协助" || item.APPSTATUS == "加入") && item.PERNR1 != _userInfo.PERNR) {
           resList.add(item);
         }
       });
@@ -110,7 +106,7 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
     });
     return await HttpRequest.historyOrder(this._userInfo.PERNR, this._userInfo.WCTYPE == "是" ? "X" : "", (List<Order> list) {
       print(list);
-      return list.length;
+      return list.where((element) => ["N13", "N14", "N15", "N16", "N17"].contains(element.ILART)).toList().length;
     }, (err) {
       print(err);
       return 0;
@@ -191,7 +187,7 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                 color: Color.fromRGBO(94, 102, 111, 1),
               ),
               middle:
-                  Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
+              Text("订单中心", style: TextStyle(fontWeight: FontWeight.w500)),
             ),
             child: SafeArea(
               child: Column(
@@ -230,10 +226,10 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "新工单",
@@ -246,15 +242,15 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["新工单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["新工单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red)
+                                        child: Text(
+                                          this
+                                              ._countMap["新工单"]
+                                              .toString(),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14),
+                                        ),
+                                        color: Colors.red)
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -287,10 +283,10 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "转卡单",
@@ -303,16 +299,16 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["转卡单"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["转卡单"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["转卡单"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -345,32 +341,32 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "维修中",
                                             );
                                           })).then((val) {
-                                            this._listOrder();
+                                    this._listOrder();
                                   });
                                 },
                                 actionArea: Row(
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["维修中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["维修中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["维修中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -403,10 +399,10 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "等待中",
@@ -419,16 +415,16 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   children: <Widget>[
                                     this._countMap != null && this._countMap["等待中"] != 0
                                         ? Badge(
-                                            child: Text(
-                                              this
-                                                  ._countMap["等待中"]
-                                                  .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 14),
-                                            ),
-                                            color: Colors.red,
-                                          )
+                                      child: Text(
+                                        this
+                                            ._countMap["等待中"]
+                                            .toString(),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14),
+                                      ),
+                                      color: Colors.red,
+                                    )
                                         : Container(),
                                     Icon(
                                       CupertinoIcons.right_chevron,
@@ -461,10 +457,10 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "协助单",
@@ -519,10 +515,10 @@ class _AssisantOrderCenterHomePageState extends State<AssisantOrderCenterHomePag
                                   ],
                                 ),
                                 onTap: () {
-                                  Navigator.of(widget.rootContext).push(
+                                  Navigator.of(context).push(
                                       new CupertinoPageRoute(
                                           settings:
-                                              RouteSettings(name: "repairList"),
+                                          RouteSettings(name: "repairList"),
                                           builder: (BuildContext context) {
                                             return OrderListPage(
                                               title: "历史单",

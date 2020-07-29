@@ -15,6 +15,7 @@ import 'package:gztyre/components/ProgressDialog.dart';
 import 'package:gztyre/components/TextButtonWidget.dart';
 import 'package:gztyre/components/ViewDialog.dart';
 import 'package:gztyre/pages/orderCenter/blockOrder//HelpPage.dart';
+import 'package:gztyre/pages/orderCenter/blockOrder/MaterielPage.dart';
 import 'package:gztyre/pages/orderCenter/blockOrder/OrderRepairDetailPage.dart';
 import 'package:gztyre/pages/orderCenter/blockOrder/WorkerPage.dart';
 import 'package:gztyre/pages/problemReport/DeviceSelectionPage.dart';
@@ -28,9 +29,9 @@ import 'package:video_player/video_player.dart';
 class OrderDetailPage extends StatefulWidget {
   OrderDetailPage(
       {Key key,
-      @required this.order,
-      @required this.itemStatus,
-      this.isRepairing = false})
+        @required this.order,
+        @required this.itemStatus,
+        this.isRepairing = false})
       : super(key: key);
 
   final Order order;
@@ -51,6 +52,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   VideoPlayerController _controller;
   Future<void> _initializeVideoPlayerFuture;
   var _reportOrderDetailFuture;
+  List<String> _helpWorker = new List();
 
   AudioPlayer audioPlayer = new AudioPlayer();
   var icon = Icon(Icons.play_arrow);
@@ -79,7 +81,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     String sapNo;
     if (StringUtils.isBank(QMNUM)) {
       sapNo = AUFNR;
-    } else sapNo = QMNUM;
+    } else
+      sapNo = QMNUM;
     return await HttpRequestRest.getMalfunction(sapNo, (Map map) async {
       return map['tradeNo'];
     }, (err) async {
@@ -91,8 +94,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   _resetAPPTRANENO(Order order) async {
     String tradeNo =
-        (new DateTime.now().millisecondsSinceEpoch.toString() + "000")
-            .substring(0, 16);
+    (new DateTime.now().millisecondsSinceEpoch.toString() + "000")
+        .substring(0, 16);
     if (order.QMNUM != null || order.QMNUM != "") {
       await HttpRequestRest.malfunction(
           tradeNo,
@@ -113,8 +116,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           null,
           null,
           null,
-          (s) {},
-          (e) {});
+              (s) {},
+              (e) {});
     }
     if (order.AUFNR != null || order.AUFNR != "") {
       await HttpRequestRest.malfunction(
@@ -136,8 +139,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           null,
           null,
           null,
-          (s) {},
-          (e) {});
+              (s) {},
+              (e) {});
     }
   }
 
@@ -146,7 +149,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+    return await this
+        ._getAPPTRADENO(order.QMNUM, order.AUFNR)
+        .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           PERNR,
           order.QMNUM,
@@ -158,7 +163,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           order.EQUNR,
           null,
           null, (res) async {
-        await HttpRequestRest.pushAlias([PERNR], "", "",
+        await HttpRequestRest.pushAlias([Global.userInfo.CPLGR + Global.userInfo.MATYP + PERNR], "", "",
             "收到${Global.userInfo.ENAME}转卡单", [], (success) {}, (err) {});
         setState(() {
           this._loading = false;
@@ -183,7 +188,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+    return await this
+        ._getAPPTRADENO(order.QMNUM, order.AUFNR)
+        .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           PERNR,
           order.QMNUM,
@@ -195,7 +202,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           order.EQUNR,
           null,
           null, (res) async {
-        await HttpRequestRest.pushAlias([PERNR], "", "",
+        await HttpRequestRest.pushAlias([Global.userInfo.CPLGR + Global.userInfo.MATYP + PERNR], "", "",
             "收到${Global.userInfo.ENAME}派单", [], (success) {}, (err) {});
         setState(() {
           this._loading = false;
@@ -220,17 +227,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       this._loading = true;
     });
     return await HttpRequest.outerRepair(order.AUFNR, Global.userInfo.PERNR,
-        (res) {
-      setState(() {
-        this._loading = false;
-      });
-      return true;
-    }, (err) {
-      setState(() {
-        this._loading = false;
-      });
-      return false;
-    });
+            (res) {
+          setState(() {
+            this._loading = false;
+          });
+          return true;
+        }, (err) {
+          setState(() {
+            this._loading = false;
+          });
+          return false;
+        });
   }
 
   Future<bool> _callHelp(
@@ -238,7 +245,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+    return await this
+        ._getAPPTRADENO(order.QMNUM, order.AUFNR)
+        .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
           order.QMNUM,
@@ -251,7 +260,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           null,
           list, (res) async {
         List<String> workList = list.map((item) {
-          return item.PERNR;
+          return Global.userInfo.CPLGR + Global.userInfo.MATYP + item.PERNR;
         }).toList();
         await HttpRequestRest.pushAlias(workList, "", "",
             "${Global.userInfo.ENAME}请求协助", [], (success) {}, (err) {});
@@ -277,7 +286,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+    return await this
+        ._getAPPTRADENO(order.QMNUM, order.AUFNR)
+        .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
           order.QMNUM,
@@ -290,13 +301,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           null,
           null, (res) async {
         await HttpRequestRest.pushAlias(
-            [order.PERNR],
+            [Global.userInfo.CPLGR + Global.userInfo.MATYP + order.PERNR],
             "",
             "",
             "${Global.userInfo.ENAME}将工单${order.QMNUM}置为等待",
             [],
-            (success) {},
-            (err) {});
+                (success) {},
+                (err) {});
         setState(() {
           this._loading = false;
         });
@@ -319,7 +330,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
-    return await this._getAPPTRADENO(order.QMNUM, order.AUFNR).then((APPTRADENO) async {
+    return await this
+        ._getAPPTRADENO(order.QMNUM, order.AUFNR)
+        .then((APPTRADENO) async {
       return await HttpRequest.changeOrderStatus(
           Global.userInfo.PERNR,
           order.QMNUM,
@@ -331,7 +344,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           order.EQUNR,
           null,
           null, (res) async {
-        await HttpRequestRest.pushAlias([order.PERNR1], "", "",
+        await HttpRequestRest.pushAlias([Global.userInfo.CPLGR + Global.userInfo.MATYP + order.PERNR1], "", "",
             "${Global.userInfo.ENAME}接受协助请求", [], (success) {}, (err) {});
         setState(() {
           this._loading = false;
@@ -371,15 +384,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             reportOrder.MATYP,
             reportOrder.MSAUS ? "X" : '',
             APPTRADENO,
-            null, 1, (res) async {
+            null,
+            1, (res) async {
           await HttpRequestRest.pushAlias(
-              [reportOrder.PERNR],
+              [Global.userInfo.CPLGR + Global.userInfo.MATYP + reportOrder.PERNR],
               "",
               "",
               "${Global.userInfo.ENAME}开始处理${reportOrder.QMNUM}",
               [],
-              (success) {},
-              (err) {});
+                  (success) {},
+                  (err) {});
           return true;
         }, (err) {
           return false;
@@ -406,13 +420,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             null,
             null, (res) async {
           await HttpRequestRest.pushAlias(
-              [reportOrder.PERNR],
+              [Global.userInfo.CPLGR + Global.userInfo.MATYP + reportOrder.PERNR],
               "",
               "",
               "${Global.userInfo.ENAME}开始处理工单${reportOrder.QMNUM}",
               [],
-              (success) {},
-              (err) {});
+                  (success) {},
+                  (err) {});
           setState(() {
             this._loading = false;
           });
@@ -436,16 +450,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     setState(() {
       this._loading = true;
     });
+    if (widget.itemStatus == "协助单") {
+      await HttpRequest.listHelpWorker(widget.order.AUFNR, (List<String> list) {
+        this._helpWorker = list;
+      }, (err) => {});
+    }
     return await HttpRequest.reportOrderDetail(widget.order.QMNUM,
-        (ReportOrder order) async {
-      this._reportOrder = order;
-      this._getPic(order);
-    }, (err) {
-      print(err);
-      setState(() {
-        this._loading = false;
-      });
-    });
+            (ReportOrder order) async {
+          this._reportOrder = order;
+          this._getPic(order);
+        }, (err) {
+          print(err);
+          setState(() {
+            this._loading = false;
+          });
+        });
   }
 
   Future _getPic(ReportOrder reportOrder) async {
@@ -528,21 +547,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           });
                           Navigator.of(context)
                               .push(new CupertinoPageRoute(
-                                  builder: (context) => new ViewDialog(
-                                        img: {
-                                          'key': i > position && position != 0
-                                              ? i - 1
-                                              : i,
-                                          'videoFile': list[i]
-                                        },
-                                        imgs: imgs,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        controller: this._controller,
-                                        initializeVideoPlayerFuture:
-                                            this._initializeVideoPlayerFuture,
-                                        onlyView: true,
-                                      )))
+                              builder: (context) => new ViewDialog(
+                                img: {
+                                  'key': i > position && position != 0
+                                      ? i - 1
+                                      : i,
+                                  'videoFile': list[i]
+                                },
+                                imgs: imgs,
+                                width:
+                                MediaQuery.of(context).size.width,
+                                controller: this._controller,
+                                initializeVideoPlayerFuture:
+                                this._initializeVideoPlayerFuture,
+                                onlyView: true,
+                              )))
                               .then((index) {
                             if (this._controller != null) {
                               this._controller.pause();
@@ -624,18 +643,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             });
             Navigator.of(context)
                 .push(new CupertinoPageRoute(
-                    builder: (context) => new ViewDialog(
-                          img: {
-                            'key': i > position && position != 0 ? i - 1 : i,
-                            'url': list[i]
-                          },
-                          imgs: imgs,
-                          width: MediaQuery.of(context).size.width,
-                          controller: this._controller,
-                          initializeVideoPlayerFuture:
-                              this._initializeVideoPlayerFuture,
-                          onlyView: true,
-                        )))
+                builder: (context) => new ViewDialog(
+                  img: {
+                    'key': i > position && position != 0 ? i - 1 : i,
+                    'url': list[i]
+                  },
+                  imgs: imgs,
+                  width: MediaQuery.of(context).size.width,
+                  controller: this._controller,
+                  initializeVideoPlayerFuture:
+                  this._initializeVideoPlayerFuture,
+                  onlyView: true,
+                )))
                 .then((index) {
               if (this._controller != null) {
                 this._controller.pause();
@@ -745,7 +764,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         CupertinoDialogAction(
                           onPressed: () {
                             Navigator.of(contextTemp).pop();
-                            Navigator.of(context).pop();
+                            Navigator.of(context).popUntil(
+                                ModalRoute.withName("blockOrderHome"));
                           },
                           child: Text("好"),
                         ),
@@ -808,9 +828,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         onPressed: () {
           Navigator.of(context)
               .push(CupertinoPageRoute(builder: (BuildContext context) {
-            return DeviceSelectionPage(
-              selectItem: device,
-              isAddMaterial: true,
+            return MaterielPage(
+//              selectItem: device,
+//              isAddMaterial: true,
               AUFNR: widget.order.AUFNR,
             );
           }));
@@ -848,7 +868,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             setState(() {
               this._loading = true;
             });
-            await this._takeItem(widget.order, this._reportOrder).then((success) {
+            await this
+                ._takeItem(widget.order, this._reportOrder)
+                .then((success) {
               if (success) {
                 setState(() {
                   this._loading = false;
@@ -866,7 +888,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             onPressed: () {
                               Navigator.of(contextTemp).pop();
                               Navigator.of(context).popUntil(
-                                  ModalRoute.withName("noPlanOrderHome"));
+                                  ModalRoute.withName("blockOrderHome"));
                             },
                             child: Text("好"),
                           ),
@@ -932,7 +954,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             setState(() {
               this._loading = true;
             });
-            await this._takeItem(widget.order, this._reportOrder).then((success) {
+            await this
+                ._takeItem(widget.order, this._reportOrder)
+                .then((success) {
               if (success) {
                 setState(() {
                   this._loading = false;
@@ -950,7 +974,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             onPressed: () {
                               Navigator.of(contextTemp).pop();
                               Navigator.of(context).popUntil(
-                                  ModalRoute.withName("noPlanOrderHome"));
+                                  ModalRoute.withName("blockOrderHome"));
                             },
                             child: Text("好"),
                           ),
@@ -1013,7 +1037,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           onPressed: () {
                             Navigator.of(contextTemp).pop();
                             Navigator.of(context).popUntil(
-                                ModalRoute.withName("noPlanOrderHome"));
+                                ModalRoute.withName("blockOrderHome"));
                           },
                           child: Text("好"),
                         ),
@@ -1063,7 +1087,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             if (worker != null) {
               this
                   ._distributeOrder(
-                      widget.order, this._reportOrder, worker.PERNR)
+                  widget.order, this._reportOrder, worker.PERNR)
                   .then((success) {
                 if (success) {
                   showCupertinoDialog(
@@ -1079,7 +1103,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                               onPressed: () {
                                 Navigator.of(contextTemp).pop();
                                 Navigator.of(context).popUntil(
-                                    ModalRoute.withName("noPlanOrderHome"));
+                                    ModalRoute.withName("blockOrderHome"));
                               },
                               child: Text("好"),
                             ),
@@ -1110,6 +1134,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             }
           });
         });
+  }
+
+  Widget _alreadyAcceptButton() {
+    return ButtonWidget(
+      padding: EdgeInsets.only(left: 0, right: 0),
+      child: Text(
+        '已接受',
+        style: TextStyle(color: Colors.grey),
+      ),
+      color: Colors.black,
+    );
   }
 
   Widget _acceptButton() {
@@ -1144,7 +1179,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           onPressed: () {
                             Navigator.of(contextTemp).pop();
                             Navigator.of(context).popUntil(
-                                ModalRoute.withName("noPlanOrderHome"));
+                                ModalRoute.withName("blockOrderHome"));
                           },
                           child: Text("好"),
                         ),
@@ -1204,7 +1239,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                             onPressed: () {
                               Navigator.of(contextTemp).pop();
                               Navigator.of(context).popUntil(
-                                  ModalRoute.withName("noPlanOrderHome"));
+                                  ModalRoute.withName("blockOrderHome"));
                             },
                             child: Text("好"),
                           ),
@@ -1242,80 +1277,84 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     if (widget.order.ILART == "N08") {
       return [
         widget.itemStatus == "新工单" &&
-                (this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
-                    this._monitorOrForeman.contains(Global.userInfo.SORTB) ||
-                    _engineer.contains(Global.userInfo.SORTB))
+            (this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
+                this._monitorOrForeman.contains(Global.userInfo.SORTB) ||
+                _engineer.contains(Global.userInfo.SORTB))
             ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                  button: _takeItemButton(),
-                ),
-              )
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: _takeItemButton(),
+          ),
+        )
             : Container(),
         widget.itemStatus == "转卡单" &&
-                this._monitorOrForeman.contains(Global.userInfo.SORTB)
+            (this._monitorOrForeman.contains(Global.userInfo.SORTB) &&
+                widget.order.PERNR1 == Global.userInfo.PERNR)
             ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                  button: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          child: _distributeButton(),
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          child: _handleWaitItemButton(),
-                        ),
-                      ),
-                    ],
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    child: _distributeButton(),
                   ),
                 ),
-              )
-            : Container(),
-        widget.itemStatus == "转卡单" &&
-                (this._equipmentSupervisor.contains(Global.userInfo.SORTB))
-            ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                  button: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          child: _outerRepairButton(),
-                        ),
-                      ),
-                    ],
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    child: _handleWaitItemButton(),
                   ),
                 ),
-              )
+              ],
+            ),
+          ),
+        )
             : Container(),
         widget.itemStatus == "转卡单" &&
-                this._maintenanceWorker.contains(Global.userInfo.SORTB)
+            (this._equipmentSupervisor.contains(Global.userInfo.SORTB) &&
+                widget.order.PERNR1 == Global.userInfo.PERNR)
             ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                  button: _handleWaitItemButton(),
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    child: _outerRepairButton(),
+                  ),
                 ),
-              )
+              ],
+            ),
+          ),
+        )
+            : Container(),
+        widget.itemStatus == "转卡单" &&
+            ((this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
+                this._engineer.contains(Global.userInfo.SORTB)) &&
+                widget.order.PERNR1 == Global.userInfo.PERNR)
+            ? Align(
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: _handleWaitItemButton(),
+          ),
+        )
             : Container(),
         widget.itemStatus == "维修中" &&
-                Global.userInfo.PERNR == widget.order.PERNR1 &&
+            (Global.userInfo.PERNR == widget.order.PERNR1 &&
                 (this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
                     this._monitorOrForeman.contains(Global.userInfo.SORTB) ||
-                    _engineer.contains(Global.userInfo.SORTB))
+                    _engineer.contains(Global.userInfo.SORTB)))
             ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                    button: Column(
-                  children: <Widget>[
-                    Row(
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+              button: Column(
+                children: <Widget>[
+                  Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Expanded(
@@ -1327,55 +1366,60 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(left: 10, right: 10),
+                            child: _waitButton(),
+                          ),
+                        ),
+                      ]),
+                  Padding(
+                    padding: EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 10, right: 10),
                             child: _addMaterielButton(),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 10, right: 10),
+                            child: _repairButton(),
                           ),
                         ),
                       ],
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 10, right: 10),
-                              child: _repairButton(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )),
-              )
+                  ),
+                ],
+              )),
+        )
             : Container(),
         widget.itemStatus == "等待中" &&
+            ((this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
+                this._monitorOrForeman.contains(Global.userInfo.SORTB) ||
+                _engineer.contains(Global.userInfo.SORTB)) &&
+                widget.order.PERNR1 == Global.userInfo.PERNR)
+            ? Align(
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: _handleWaitItemButton(),
+          ),
+        )
+            : Container(),
+        widget.itemStatus == "协助单" &&
+            ((widget.order.APPSTATUS == "呼叫协助" ||
+                widget.order.APPSTATUS == "加入") &&
                 (this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
                     this._monitorOrForeman.contains(Global.userInfo.SORTB) ||
-                    _engineer.contains(Global.userInfo.SORTB))
+                    _engineer.contains(Global.userInfo.SORTB)))
             ? Align(
-                alignment: Alignment.bottomCenter,
-                child: ButtonBarWidget(
-                  button: _handleWaitItemButton(),
-                ),
-              )
-            : Container(),
-        widget.itemStatus == "协助单"
-            ? ((widget.order.APPSTATUS == "呼叫协助" ||
-                        widget.order.APPSTATUS == "加入") &&
-                    (this._maintenanceWorker.contains(Global.userInfo.SORTB) ||
-                        this
-                            ._monitorOrForeman
-                            .contains(Global.userInfo.SORTB) ||
-                        _engineer.contains(Global.userInfo.SORTB))
-                ? Align(
-                    alignment: Alignment.bottomCenter,
-                    child: ButtonBarWidget(
-                      button: _acceptButton(),
-                    ),
-                  )
-                : Container())
+          alignment: Alignment.bottomCenter,
+          child: ButtonBarWidget(
+            button: this._helpWorker.contains(Global.userInfo.PERNR)
+                ? _alreadyAcceptButton()
+                : _acceptButton(),
+          ),
+        )
             : Container(),
         widget.itemStatus == "历史单" ? Container() : Container()
       ];
@@ -1393,29 +1437,21 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   void initState() {
-    print(!(widget.order.ASTTX == "已完成" ||
-            widget.order.ASTTX == "新工单" ||
-            widget.order.ASTTX == "新建" ||
-            (widget.order.APPSTATUS == "呼叫协助" &&
-                widget.order.PERNR1 != Global.userInfo.PERNR) ||
-            (widget.order.APPSTATUS == "加入" &&
-                widget.order.PERNR1 != Global.userInfo.PERNR)) &&
-        widget.itemStatus != "历史单");
     this._reportOrderDetailFuture = this._reportOrderDetail();
     _audioPlayerStateSubscription =
         audioPlayer.onPlayerStateChanged.listen((s) {
-      if (s == AudioPlayerState.PLAYING) {
-        setState(() => icon = Icon(Icons.pause));
-      } else {
-        setState(() {
-          icon = Icon(Icons.play_arrow);
+          if (s == AudioPlayerState.PLAYING) {
+            setState(() => icon = Icon(Icons.pause));
+          } else {
+            setState(() {
+              icon = Icon(Icons.play_arrow);
+            });
+          }
+        }, onError: (msg) {
+          setState(() {
+            icon = Icon(Icons.play_arrow);
+          });
         });
-      }
-    }, onError: (msg) {
-      setState(() {
-        icon = Icon(Icons.play_arrow);
-      });
-    });
     super.initState();
   }
 
@@ -1439,22 +1475,22 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   trailing: !(widget.order.ASTTX == "已完成" ||
-                              widget.order.ASTTX == "新工单" ||
-                              widget.order.ASTTX == "新建" ||
-                              (widget.order.APPSTATUS == "呼叫协助" &&
-                                  widget.order.PERNR1 !=
-                                      Global.userInfo.PERNR) ||
-                              (widget.order.APPSTATUS == "加入" &&
-                                  widget.order.PERNR1 !=
-                                      Global.userInfo.PERNR)) &&
-                          widget.itemStatus != "历史单" &&
-                          widget.order.PERNR1 == Global.userInfo.PERNR &&
-                          ((widget.order.ILART == "N08" &&
-                                  (_maintenanceWorker
-                                          .contains(Global.userInfo.SORTB) ||
-                                      _monitorOrForeman
-                                          .contains(Global.userInfo.SORTB)) ||
-                              _engineer.contains(Global.userInfo.SORTB)))
+                      widget.order.ASTTX == "新工单" ||
+                      widget.order.ASTTX == "新建" ||
+                      (widget.order.APPSTATUS == "呼叫协助" &&
+                          widget.order.PERNR1 !=
+                              Global.userInfo.PERNR) ||
+                      (widget.order.APPSTATUS == "加入" &&
+                          widget.order.PERNR1 !=
+                              Global.userInfo.PERNR)) &&
+                      widget.itemStatus != "历史单" &&
+                      widget.order.PERNR1 == Global.userInfo.PERNR &&
+                      ((widget.order.ILART == "N08" &&
+                          (_maintenanceWorker
+                              .contains(Global.userInfo.SORTB) ||
+                              _monitorOrForeman
+                                  .contains(Global.userInfo.SORTB)) ||
+                          _engineer.contains(Global.userInfo.SORTB)))
                       ? _transferCardButton()
                       : null,
                 ),
@@ -1469,28 +1505,28 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Expanded(
-                              child: widget.order.QMNUM != "" &&
-                                      widget.order.QMNUM != null
-                                  ? Text(
-                                      "报修单号：${widget.order.QMNUM}",
-                                      style: TextStyle(
-                                        color: Color.fromRGBO(0, 0, 0, 0.45),
-                                        fontSize: 12,
-                                      ),
-                                    )
-                                  : Container(),
-                            ),
+//                            Expanded(
+//                              child: widget.order.QMNUM != "" &&
+//                                      widget.order.QMNUM != null
+//                                  ? Text(
+//                                      "报修单号：${widget.order.QMNUM}",
+//                                      style: TextStyle(
+//                                        color: Color.fromRGBO(0, 0, 0, 0.45),
+//                                        fontSize: 12,
+//                                      ),
+//                                    )
+//                                  : Container(),
+//                            ),
                             Expanded(
                               child: widget.order.AUFNR != "" &&
-                                      widget.order.AUFNR != null
+                                  widget.order.AUFNR != null
                                   ? Text(
-                                      "维修单号：${widget.order.AUFNR}",
-                                      style: TextStyle(
-                                        color: Color.fromRGBO(0, 0, 0, 0.45),
-                                        fontSize: 12,
-                                      ),
-                                    )
+                                "维修单号：${widget.order.AUFNR}",
+                                style: TextStyle(
+                                  color: Color.fromRGBO(0, 0, 0, 0.45),
+                                  fontSize: 12,
+                                ),
+                              )
                                   : Container(),
                             ),
                           ],
@@ -1504,10 +1540,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                         onTap: () {
                           Navigator.of(context).push(CupertinoPageRoute(
                               builder: (BuildContext context) {
-                            return UserInfoPage(
-                              PERNR: widget.order.PERNR,
-                            );
-                          }));
+                                return UserInfoPage(
+                                  PERNR: widget.order.PERNR,
+                                );
+                              }));
                         },
                       ),
                       Divider(
@@ -1539,10 +1575,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           } else {
                             Navigator.of(context).push(CupertinoPageRoute(
                                 builder: (BuildContext context) {
-                              return RepairHistoryPage(
-                                order: widget.order,
-                              );
-                            }));
+                                  return RepairHistoryPage(
+                                    order: widget.order,
+                                  );
+                                }));
                           }
                         },
                       ),
@@ -1575,10 +1611,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                           } else {
                             Navigator.of(context).push(CupertinoPageRoute(
                                 builder: (BuildContext context) {
-                              return RepairDetailPage(
-                                order: widget.order,
-                              );
-                            }));
+                                  return RepairDetailPage(
+                                    order: widget.order,
+                                  );
+                                }));
                           }
                         },
                       ),
@@ -1595,7 +1631,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       Expanded(
                         child: Padding(
                           padding:
-                              EdgeInsets.only(left: 10, right: 10, top: 10),
+                          EdgeInsets.only(left: 10, right: 10, top: 10),
                           child: GridView.count(
                             crossAxisCount: 2,
                             children: <Widget>[

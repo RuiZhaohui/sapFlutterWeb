@@ -1,11 +1,11 @@
 {
   "name": "故障维修",
   "short_name": "故障维修",
-  "start_url": ".",
+  "start_url": "/flutter/",
   "display": "minimal-ui",
   "background_color": "#0175C2",
   "theme_color": "#0175C2",
-  "description": "A new Flutter project.",
+  "description": "故障维修",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [

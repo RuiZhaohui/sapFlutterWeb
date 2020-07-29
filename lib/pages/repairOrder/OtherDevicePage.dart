@@ -67,31 +67,31 @@ class _OtherDevicePageState extends State<OtherDevicePage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: this._otherDeviceFuture,
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-      return new ProgressDialog(
-          loading: this._loading,
-          child: CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-              leading: CupertinoNavigationBarBackButton(
-                onPressed: () => Navigator.pop(context),
-                color: Color.fromRGBO(94, 102, 111, 1),
+      future: this._otherDeviceFuture,
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return new ProgressDialog(
+            loading: this._loading,
+            child: CupertinoPageScaffold(
+              navigationBar: CupertinoNavigationBar(
+                leading: CupertinoNavigationBarBackButton(
+                  onPressed: () => Navigator.pop(context),
+                  color: Color.fromRGBO(94, 102, 111, 1),
+                ),
+                middle: Text(
+                  "其他设备",
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              middle: Text(
-                "其他设备",
-                style: TextStyle(fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: SafeArea(
+                child: ListView(
+                  children: <Widget>[
+                    ...buildList(this._list)
+                  ],
+                ),
               ),
-            ),
-            child: SafeArea(
-              child: ListView(
-                children: <Widget>[
-                  ...buildList(this._list)
-                ],
-              ),
-            ),
-          ));
-    },);
+            ));
+      },);
   }
 }
